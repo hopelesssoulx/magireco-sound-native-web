@@ -2,20 +2,38 @@
   <div class="index">
     <el-tabs v-model="activeTabName" @tab-click="tabClick">
       <el-tab-pane
-        v-for="(listDetail, index) in list"
+        v-for="(chapter, index) in list"
         :label="index"
         :name="index"
       >
-        <div
+        <!-- <div
           v-for="(item, index2) in listDetail"
           @click="fileClick(index + '/' + item.name)"
           class="flex-left"
         >
           <span class="pd-10"> {{ index2 }}</span>
           <span class="pd-10"> {{ item.name }}</span>
-          <span class="pd-10"> <audio controls :src="audioFile"></audio></span>
+          <span class="pd-10">
+            <audio controls :src="audioFiles[index2]"></audio
+          ></span>
           <span class="pd-10"> {{ item.character }}</span>
-        </div>
+        </div> -->
+        <el-table ref="chapterDetail" :data="chapter">
+          <el-table-column type="selection" />
+          <!-- <el-table-column property="name" label="文件名" @click="" /> -->
+          <el-table-column label="文件名">
+            <template #default="scope">
+              <div @click="fileClick(scope)">{{ scope.row.name }}</div>
+            </template>
+          </el-table-column>
+          <!-- <audio controls :src="audioFiles[0]"></audio> -->
+          <el-table-column label="播放">
+            <template #default="scope">
+              <audio controls :src="audioFiles[scope.$index]"></audio>
+            </template>
+          </el-table-column>
+          <el-table-column property="character" label="角色" />
+        </el-table>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -29,8 +47,8 @@ export default {
     return {
       list: [],
       activeTabName: "",
-      audioFile: "",
-      fileName: "",
+      audioFiles: [],
+      currentClick: -1,
 
       hcaJsUrl: new URL(hcaStr, document.baseURI),
     };
@@ -39,17 +57,26 @@ export default {
     this.getList();
   },
   methods: {
-    fileClick(path) {
+    fileClick(scope) {
       let that = this;
-      that.getFile(path);
+      that.currentClick = scope.$index;
+      that.getFile(that.activeTabName + "/" + scope.row.name);
     },
     tabClick(tab, event) {
       let that = this;
+      setTimeout(() => {
+        let chapterLength = that.list[that.activeTabName].length;
+        that.audioFiles = [];
+        for (let i = 0; i < chapterLength; i++) {
+          that.audioFiles.push("");
+        }
+      }, 10);
     },
     getList() {
       let that = this;
       commonApi.getList().then((res) => {
         that.list = res.data;
+        // that.activeTabName = Object.keys(res.data)[0]
       });
     },
     async getFile(path) {
@@ -83,7 +110,7 @@ export default {
         new Blob([wav], { type: "audio/x-wav" })
       );
 
-      that.audioFile = tmpUrl;
+      that.audioFiles[that.currentClick] = tmpUrl;
     },
   },
 };
