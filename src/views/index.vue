@@ -18,21 +18,29 @@
           ></span>
           <span class="pd-10"> {{ item.character }}</span>
         </div> -->
-        <el-table ref="chapterDetail" :data="chapter">
+        <el-table
+          ref="chapterDetail"
+          @selection-change="selectFile"
+          :data="chapter"
+        >
           <el-table-column type="selection" />
           <!-- <el-table-column property="name" label="文件名" @click="" /> -->
-          <el-table-column label="文件名">
+          <el-table-column label="文件名" fixed="left" width="250">
             <template #default="scope">
               <div @click="fileClick(scope)">{{ scope.row.name }}</div>
             </template>
           </el-table-column>
           <!-- <audio controls :src="audioFiles[0]"></audio> -->
-          <el-table-column label="播放">
+          <el-table-column label="播放" fixed="left" width="350">
             <template #default="scope">
               <audio controls :src="audioFiles[scope.$index]"></audio>
             </template>
           </el-table-column>
           <el-table-column property="character" label="角色" />
+          <el-table-column property="ori" label="原文" />
+          <el-table-column property="chs" label="中文" />
+          <el-table-column property="eng" label="英语" />
+          <el-table-column property="otherLanguage" label="其他" />
         </el-table>
       </el-tab-pane>
     </el-tabs>
@@ -57,6 +65,11 @@ export default {
     this.getList();
   },
   methods: {
+    selectFile(val) {
+      let that = this;
+      console.log(that.$refs.chapterDetail);
+      // console.log(val);
+    },
     fileClick(scope) {
       let that = this;
       that.currentClick = scope.$index;
