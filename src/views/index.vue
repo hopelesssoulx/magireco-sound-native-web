@@ -1,50 +1,5 @@
 <template>
-  <div class="index">
-    <el-tabs v-model="activeTabName" @tab-click="tabClick">
-      <el-tab-pane
-        v-for="(chapter, index) in list"
-        :label="index"
-        :name="index"
-      >
-        <!-- <div
-          v-for="(item, index2) in listDetail"
-          @click="fileClick(index + '/' + item.name)"
-          class="flex-left"
-        >
-          <span class="pd-10"> {{ index2 }}</span>
-          <span class="pd-10"> {{ item.name }}</span>
-          <span class="pd-10">
-            <audio controls :src="audioFiles[index2]"></audio
-          ></span>
-          <span class="pd-10"> {{ item.character }}</span>
-        </div> -->
-        <el-table
-          ref="chapterDetail"
-          @selection-change="selectFile"
-          :data="chapter"
-        >
-          <el-table-column type="selection" />
-          <!-- <el-table-column property="name" label="文件名" @click="" /> -->
-          <el-table-column label="文件名" fixed="left" width="250">
-            <template #default="scope">
-              <div @click="fileClick(scope)">{{ scope.row.name }}</div>
-            </template>
-          </el-table-column>
-          <!-- <audio controls :src="audioFiles[0]"></audio> -->
-          <el-table-column label="播放" fixed="left" width="350">
-            <template #default="scope">
-              <audio controls :src="audioFiles[scope.$index]"></audio>
-            </template>
-          </el-table-column>
-          <el-table-column property="character" label="角色" />
-          <el-table-column property="ori" label="原文" />
-          <el-table-column property="chs" label="中文" />
-          <el-table-column property="eng" label="英语" />
-          <el-table-column property="otherLanguage" label="其他" />
-        </el-table>
-      </el-tab-pane>
-    </el-tabs>
-  </div>
+  <div class="index"></div>
 </template>
 
 <script>
@@ -53,43 +8,19 @@ import { hcaStr } from "../utils/hcaStr";
 export default {
   data() {
     return {
-      list: [],
-      activeTabName: "",
-      audioFiles: [],
-      currentClick: -1,
+      soundNative: {},
 
       hcaJsUrl: new URL(hcaStr, document.baseURI),
     };
   },
   created() {
-    this.getList();
+    this.getSoundNative();
   },
   methods: {
-    selectFile(val) {
-      let that = this;
-      console.log(that.$refs.chapterDetail);
-      // console.log(val);
-    },
-    fileClick(scope) {
-      let that = this;
-      that.currentClick = scope.$index;
-      that.getFile(that.activeTabName + "/" + scope.row.name);
-    },
-    tabClick(tab, event) {
-      let that = this;
-      setTimeout(() => {
-        let chapterLength = that.list[that.activeTabName].length;
-        that.audioFiles = [];
-        for (let i = 0; i < chapterLength; i++) {
-          that.audioFiles.push("");
-        }
-      }, 10);
-    },
-    getList() {
+    getSoundNative() {
       let that = this;
       commonApi.getList().then((res) => {
-        that.list = res.data;
-        // that.activeTabName = Object.keys(res.data)[0]
+        that.soundNative = res.data
       });
     },
     async getFile(path) {
