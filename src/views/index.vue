@@ -26,7 +26,19 @@
       ></el-tab-pane>
     </el-tabs>
 
-    <el-table v-if="list.length" :data="list" stripe height="770">
+    <el-tabs @tab-click="conversationChange">
+      <el-tab-pane
+        v-for="(category, item, idx) in conversationIdxCount"
+        :label="item + 1"
+      ></el-tab-pane>
+    </el-tabs>
+
+    <el-table
+      v-if="conversationData.length"
+      :data="conversationData"
+      stripe
+      height="770"
+    >
       <el-table-column type="selection" fixed />
       <el-table-column label="文件名" fixed width="260">
         <template #default="scope">
@@ -66,7 +78,10 @@ export default {
       category: "",
       categoryData: {},
       section: "",
-      list: [],
+      sectionData: [],
+      conversationIdxCount: [],
+      conversationIdx: 0,
+      conversationData: [],
       audioList: [],
       currentClickIdx: -1,
 
@@ -85,13 +100,36 @@ export default {
   methods: {
     catrgoryChange(tab, event) {
       let _this = this;
+      _this.audioList = [];
+      _this.conversationData = [];
+      _this.conversationIdxCount = [];
+
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];
     },
     sectionChange(tab, event) {
       let _this = this;
+      _this.audioList = [];
+      _this.conversationData = [];
+
       _this.section = tab.props.label;
-      _this.list = _this.categoryData[_this.section];
+      _this.sectionData = _this.categoryData[_this.section];
+      _this.sectionData.forEach((item) => {
+        let conversationIdx = item.name.split("-")[1];
+        console.log(conversationIdx);
+        if (!_this.conversationIdxCount.includes(conversationIdx)) {
+          _this.conversationIdxCount.push(conversationIdx);
+        }
+      });
+    },
+    conversationChange(tab, event) {
+      let _this = this;
+      _this.audioList = [];
+
+      _this.conversationIdx = tab.props.label;
+      _this.conversationData = _this.sectionData.filter((item) => {
+        return item.name.split("-")[1] == _this.conversationIdx;
+      });
     },
     fileClick(scope) {
       let _this = this;
