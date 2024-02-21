@@ -1,5 +1,44 @@
 <template>
-  <div class="index"></div>
+  <div class="index">
+    <el-tabs @tab-click="catrgoryChange">
+      <el-tab-pane
+        v-for="(category, item, idx) in soundNative"
+        :label="item"
+      ></el-tab-pane>
+    </el-tabs>
+
+    <el-tabs @tab-click="sectionChange">
+      <el-tab-pane
+        v-for="(category, item, idx) in categoryData"
+        :label="item"
+      ></el-tab-pane>
+    </el-tabs>
+
+    <el-table v-if="list.length" :data="list" stripe height="770">
+      <el-table-column type="selection" fixed />
+      <!-- <el-table-column prop="name" label="文件名" fixed width="260" /> -->
+      <el-table-column label="文件名" fixed width="260">
+        <template #default="scope">
+          <div @click="fileClick(scope)">
+            {{ scope.row.name }}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="" fixed width="360">
+        <template #default="scope">
+          <div>
+            <audio controls :src="audioList[scope.$index]"></audio>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="character" label="角色" />
+      <el-table-column prop="ori" label="原文" />
+      <el-table-column prop="chs" label="中文" />
+      <el-table-column prop="eng" label="英语" />
+      <el-table-column prop="otherLanguage" label="其他语言" />
+      <el-table-column prop="remark" label="备注" />
+    </el-table>
+  </div>
 </template>
 
 <script>
@@ -9,18 +48,42 @@ export default {
   data() {
     return {
       soundNative: {},
+      category: "",
+      categoryData: {},
+      section: "",
+      list: [],
+      audioList: [],
+      currentClick: -1,
 
       hcaJsUrl: new URL(hcaStr, document.baseURI),
     };
   },
   created() {
     this.getSoundNative();
+
+    // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
+    catrgoryChange(tab, event) {
+      let that = this;
+      that.category = tab.props.label;
+      that.categoryData = that.soundNative[that.category];
+    },
+    sectionChange(tab, event) {
+      let that = this;
+      that.section = tab.props.label;
+      that.list = that.categoryData[that.section];
+    },
+    fileClick(scope) {
+      let that = this;
+      that.currentClick = scope.$index;
+      that.getFile(that.section + "/" + scope.row.name);
+    },
+
     getSoundNative() {
       let that = this;
       commonApi.getList().then((res) => {
-        that.soundNative = res.data
+        that.soundNative = res.data;
       });
     },
     async getFile(path) {
@@ -54,20 +117,10 @@ export default {
         new Blob([wav], { type: "audio/x-wav" })
       );
 
-      that.audioFiles[that.currentClick] = tmpUrl;
+      that.audioList[that.currentClick] = tmpUrl;
     },
   },
 };
 </script>
 
-<style lang="scss" scoped>
-.flex-left {
-  display: flex;
-  justify-content: left;
-  align-items: center;
-}
-
-.pd-10 {
-  padding: 10px;
-}
-</style>
+<style lang="scss" scoped></style>
