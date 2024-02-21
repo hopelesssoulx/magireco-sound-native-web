@@ -1,5 +1,17 @@
 <template>
   <div class="index">
+    <div>
+      <span>key1=</span><input type="text" v-model="hcaKey1" />
+      <span class="ml-10">key2=</span><input type="text" v-model="hcaKey2" />
+      <br />
+      <span>decoding mode: </span
+      ><input type="number" step="8" min="0" max="32" v-model="hcaMode" />
+      <span class="ml-10">loop count: </span
+      ><input type="number" step="1" min="0" max="99" v-model="hcaLoopCount" />
+      <span class="ml-10">volume: </span
+      ><input type="number" step="1" min="0" max="100" v-model="hcaVolume" />
+    </div>
+
     <el-tabs @tab-click="catrgoryChange">
       <el-tab-pane
         v-for="(category, item, idx) in soundNative"
@@ -16,7 +28,6 @@
 
     <el-table v-if="list.length" :data="list" stripe height="770">
       <el-table-column type="selection" fixed />
-      <!-- <el-table-column prop="name" label="文件名" fixed width="260" /> -->
       <el-table-column label="文件名" fixed width="260">
         <template #default="scope">
           <div @click="fileClick(scope)">
@@ -27,7 +38,11 @@
       <el-table-column label="" fixed width="360">
         <template #default="scope">
           <div>
-            <audio controls :src="audioList[scope.$index]"></audio>
+            <audio
+              controls
+              :src="audioList[scope.$index]"
+              :title="scope.row.name + '.wav'"
+            ></audio>
           </div>
         </template>
       </el-table-column>
@@ -53,47 +68,51 @@ export default {
       section: "",
       list: [],
       audioList: [],
-      currentClick: -1,
+      currentClickIdx: -1,
 
       hcaJsUrl: new URL(hcaStr, document.baseURI),
+      hcaKey1: "0x01395C51",
+      hcaKey2: "0x00000000",
+      hcaMode: 16,
+      hcaLoopCount: 0,
+      hcaVolume: 100,
     };
   },
   created() {
     this.getSoundNative();
-
-    // console.log(JSON.parse(JSON.stringify()));
+    // console.log(JSON.parse(JSON.stringify()));s
   },
   methods: {
     catrgoryChange(tab, event) {
-      let that = this;
-      that.category = tab.props.label;
-      that.categoryData = that.soundNative[that.category];
+      let _this = this;
+      _this.category = tab.props.label;
+      _this.categoryData = _this.soundNative[_this.category];
     },
     sectionChange(tab, event) {
-      let that = this;
-      that.section = tab.props.label;
-      that.list = that.categoryData[that.section];
+      let _this = this;
+      _this.section = tab.props.label;
+      _this.list = _this.categoryData[_this.section];
     },
     fileClick(scope) {
-      let that = this;
-      that.currentClick = scope.$index;
-      that.getFile(that.section + "/" + scope.row.name);
+      let _this = this;
+      _this.currentClickIdx = scope.$index;
+      _this.getFile(_this.section + "/" + scope.row.name);
     },
 
     getSoundNative() {
-      let that = this;
+      let _this = this;
       commonApi.getList().then((res) => {
-        that.soundNative = res.data;
+        _this.soundNative = res.data;
       });
     },
     async getFile(path) {
-      let that = this;
+      let _this = this;
       let res = await fetch("http://127.0.0.1:16168/getFile/" + path);
-      that.decryptAndDecode(res);
+      _this.decryptAndDecode(res);
     },
     async decryptAndDecode(hca) {
-      let that = this;
-      let res = await fetch(that.hcaJsUrl.href);
+      let _this = this;
+      let res = await fetch(_this.hcaJsUrl.href);
       let blob = new Blob([await res.arrayBuffer()], {
         type: "text/javascript",
       });
@@ -107,20 +126,29 @@ export default {
 
       let decrypted = await worker.decrypt(
         buffer.slice(0),
-        "0x01395C51",
-        "0x00000000"
+        _this.hcaKey1,
+        _this.hcaKey2
       );
-      let wav = await worker.decode(decrypted, 16);
+      let wav = await worker.decode(
+        decrypted,
+        _this.hcaMode,
+        _this.hcaLoopCount,
+        _this.hcaVolume
+      );
       await worker.shutdown();
 
       let tmpUrl = URL.createObjectURL(
         new Blob([wav], { type: "audio/x-wav" })
       );
 
-      that.audioList[that.currentClick] = tmpUrl;
+      _this.audioList[_this.currentClickIdx] = tmpUrl;
     },
   },
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.ml-10 {
+  margin-left: 10px;
+}
+</style>
