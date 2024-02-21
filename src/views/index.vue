@@ -80,7 +80,7 @@ export default {
   },
   created() {
     this.getSoundNative();
-    // console.log(JSON.parse(JSON.stringify()));s
+    // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
     catrgoryChange(tab, event) {
