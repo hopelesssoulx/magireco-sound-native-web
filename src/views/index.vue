@@ -19,17 +19,44 @@
       ></el-tab-pane>
     </el-tabs>
 
-    <el-tabs @tab-click="sectionChange">
+    <!-- <el-tabs @tab-click="sectionChange">
       <el-tab-pane
         v-for="(category, item, idx) in categoryData"
         :label="item"
       ></el-tab-pane>
-    </el-tabs>
+    </el-tabs> -->
+
+    <!-- <el-dropdown v-if="categoryData != null">
+      <el-button type="primary">
+        Arc 1<el-icon class="el-icon--right"><i-ep-arrow-down /></el-icon>
+      </el-button>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item v-for="(category, item, idx) in categoryData">{{
+            item
+          }}</el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown> -->
+
+    <el-select
+      v-if="categoryData != null"
+      v-model="category"
+      class="m-2"
+      placeholder="Select"
+      size="large"
+      style="width: 240px"
+      @change="sectionChange"
+    >
+      <el-option v-for="(category, item, idx) in categoryData" :value="item" />
+    </el-select>
+
+    <span class="ml-10">{{ sectionDesc }}</span>
 
     <el-tabs @tab-click="conversationChange">
       <el-tab-pane
-        v-for="(category, item, idx) in conversationIdxCount"
-        :label="item + 1"
+        v-for="(item, idx) in conversationIdxCount"
+        :label="item"
       ></el-tab-pane>
     </el-tabs>
 
@@ -37,12 +64,12 @@
       v-if="conversationData.length"
       :data="conversationData"
       stripe
-      height="770"
+      height="680"
     >
       <el-table-column type="selection" fixed />
       <el-table-column label="文件名" fixed width="260">
         <template #default="scope">
-          <div @click="fileClick(scope)">
+          <div @click="fileClick(scope)" class="file">
             {{ scope.row.name }}
           </div>
         </template>
@@ -52,6 +79,7 @@
           <div>
             <audio
               controls
+              autoplay
               :src="audioList[scope.$index]"
               :title="scope.row.name + '.wav'"
             ></audio>
@@ -61,7 +89,7 @@
       <el-table-column prop="character" label="角色" />
       <el-table-column prop="ori" label="原文" />
       <el-table-column prop="chs" label="中文" />
-      <el-table-column prop="eng" label="英语" />
+      <el-table-column prop="eng" label="英文" />
       <el-table-column prop="otherLanguage" label="其他语言" />
       <el-table-column prop="remark" label="备注" />
     </el-table>
@@ -76,7 +104,7 @@ export default {
     return {
       soundNative: {},
       category: "",
-      categoryData: {},
+      categoryData: null, // {}
       section: "",
       sectionData: [],
       conversationIdxCount: [],
@@ -84,6 +112,8 @@ export default {
       conversationData: [],
       audioList: [],
       currentClickIdx: -1,
+
+      sectionDesc: "",
 
       hcaJsUrl: new URL(hcaStr, document.baseURI),
       hcaKey1: "0x01395C51",
@@ -95,6 +125,8 @@ export default {
   },
   created() {
     this.getSoundNative();
+    document.cookie = "nae" + "=" + "12323123";
+    document.cookie = "naeeeeeeeeeeeeeeeeeeeeeeeeee" + "=" + "12323123";
     // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
@@ -103,6 +135,7 @@ export default {
       _this.audioList = [];
       _this.conversationData = [];
       _this.conversationIdxCount = [];
+      _this.sectionDesc = "";
 
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];
@@ -110,13 +143,24 @@ export default {
     sectionChange(tab, event) {
       let _this = this;
       _this.audioList = [];
+      _this.conversationIdxCount = [];
       _this.conversationData = [];
+
+      _this.section = tab;
+      _this.sectionData = _this.categoryData[_this.section];
+      _this.sectionData.forEach((item) => {
+        let conversationIdx = item.name.split("-")[1];
+        if (!_this.conversationIdxCount.includes(conversationIdx)) {
+          _this.conversationIdxCount.push(conversationIdx);
+        }
+      });
+      _this.handleSectionDesc(tab);
+      return;
 
       _this.section = tab.props.label;
       _this.sectionData = _this.categoryData[_this.section];
       _this.sectionData.forEach((item) => {
         let conversationIdx = item.name.split("-")[1];
-        console.log(conversationIdx);
         if (!_this.conversationIdxCount.includes(conversationIdx)) {
           _this.conversationIdxCount.push(conversationIdx);
         }
@@ -135,6 +179,36 @@ export default {
       let _this = this;
       _this.currentClickIdx = scope.$index;
       _this.getFile(_this.section + "/" + scope.row.name);
+    },
+    handleSectionDesc(section) {
+      let _this = this;
+
+      section = section.split("_");
+      if (section[2]) {
+        _this.sectionDesc = "other";
+        return;
+      }
+
+      section = section[1]; // 101101
+      let chapter = section[2] + section[3];
+      let conversation = section[4] + section[5];
+      chapter = parseInt(chapter);
+      if (chapter != 0) {
+        chapter -= 10;
+      }
+
+      if (section < 102100) {
+        _this.sectionDesc =
+          "arc 1 " + "chapter " + chapter + " section " + conversation;
+      }
+      if (section > 102100) {
+        chapter -= 11;
+        _this.sectionDesc =
+          "arc 2 " + "chapter " + chapter + " section " + conversation;
+      }
+      if (section > 104200) {
+        _this.sectionDesc = "scene 0";
+      }
     },
 
     getSoundNative() {
@@ -155,7 +229,7 @@ export default {
         type: "text/javascript",
       });
       let hcaJsObjUrl = URL.createObjectURL(blob);
-      let hcaJsModule = await import(hcaJsObjUrl);
+      let hcaJsModule = await import(/* @vite-ignore */ hcaJsObjUrl);
       let HCAWorker = hcaJsModule.HCAWorker;
       let worker = await HCAWorker.create(hcaJsObjUrl);
 
@@ -188,5 +262,19 @@ export default {
 <style lang="scss" scoped>
 .ml-10 {
   margin-left: 10px;
+}
+
+.file {
+  cursor: pointer;
+}
+.file::after {
+  display: block;
+  content: "";
+  border-bottom: 2px solid #808080;
+  width: 0;
+  transition: width 0.3s ease-in-out;
+}
+.file:hover::after {
+  width: 100%;
 }
 </style>
