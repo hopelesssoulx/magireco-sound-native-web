@@ -52,6 +52,13 @@
     </el-select>
 
     <span class="ml-10">{{ sectionDesc }}</span>
+    <el-button
+      v-if="conversationData.length"
+      class="ml-10"
+      type="primary"
+      @click="downloadSelection()"
+      >download</el-button
+    >
 
     <el-tabs @tab-click="conversationChange">
       <el-tab-pane
@@ -63,6 +70,7 @@
     <el-table
       v-if="conversationData.length"
       :data="conversationData"
+      ref="list"
       stripe
       height="680"
     >
@@ -98,6 +106,8 @@
 
 <script>
 import * as commonApi from "../api/common.js";
+import JSZip from "jszip";
+import FileSaver from "file-saver";
 import { hcaStr } from "../utils/hcaStr";
 export default {
   data() {
@@ -125,11 +135,54 @@ export default {
   },
   created() {
     this.getSoundNative();
-    document.cookie = "nae" + "=" + "12323123";
-    document.cookie = "naeeeeeeeeeeeeeeeeeeeeeeeeee" + "=" + "12323123";
     // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
+    downloadSelection() {
+      let _this = this;
+
+      let list = _this.$refs["list"].getSelectionRows();
+
+      if (list.length <= 8) {
+        let a = document.createElement("a");
+        list.forEach((item) => {
+          commonApi.getFile(_this.section + "/" + item.name).then((res) => {
+            a.href = window.URL.createObjectURL(new Blob([res.data]));
+            a.setAttribute("download", item.name);
+            a.click();
+          });
+        });
+      }
+      if (list.length > 8) {
+        let zip = new JSZip();
+        let files = [];
+        list.forEach((item) => {
+          let file = commonApi
+            .getFile(_this.section + "/" + item.name)
+            .then((res) => {
+              // zip.file(item.name, res.data, { binary: true });
+              zip.file(item.name + ".wav", _this.decryptAndDecode(res.data), {
+                binary: true,
+              });
+            });
+          files.push(file);
+        });
+        Promise.all(files).then(() => {
+          zip
+            .generateAsync({
+              type: "blob",
+              compression: "DEFLATE",
+              compressionOptions: {
+                level: 1,
+              },
+            })
+            .then((res) => {
+              FileSaver.saveAs(res, "a.zip");
+            });
+        });
+      }
+    },
+
     catrgoryChange(tab, event) {
       let _this = this;
       _this.audioList = [];
@@ -249,11 +302,12 @@ export default {
       );
       await worker.shutdown();
 
-      let tmpUrl = URL.createObjectURL(
-        new Blob([wav], { type: "audio/x-wav" })
-      );
+      let wavObj = new Blob([wav], { type: "audio/x-wav" });
+      let tmpUrl = URL.createObjectURL(wavObj);
 
       _this.audioList[_this.currentClickIdx] = tmpUrl;
+
+      return wavObj;
     },
   },
 };
