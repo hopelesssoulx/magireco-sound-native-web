@@ -41,7 +41,7 @@
 
     <el-select
       v-if="categoryData != null"
-      v-model="category"
+      v-model="section"
       class="m-2"
       placeholder="Select"
       size="large"
@@ -143,10 +143,18 @@ export default {
 
       let list = _this.$refs["list"].getSelectionRows();
 
+      let filePath = "";
+      if (_this.category == "fullvoice") {
+        filePath = _this.category + "/" + _this.section + "/";
+      }
+      if (_this.category == "bgm" || _this.category == "voice") {
+        filePath = _this.category + "/";
+      }
+
       if (list.length <= 8) {
         let a = document.createElement("a");
         list.forEach((item) => {
-          commonApi.getFile(_this.section + "/" + item.name).then((res) => {
+          commonApi.getFile(filePath + item.name).then((res) => {
             a.href = window.URL.createObjectURL(new Blob([res.data]));
             a.setAttribute("download", item.name);
             a.click();
@@ -157,14 +165,12 @@ export default {
         let zip = new JSZip();
         let files = [];
         list.forEach((item) => {
-          let file = commonApi
-            .getFile(_this.section + "/" + item.name)
-            .then((res) => {
-              // zip.file(item.name, res.data, { binary: true });
-              zip.file(item.name + ".wav", _this.decryptAndDecode(res.data), {
-                binary: true,
-              });
+          let file = commonApi.getFile(filePath + item.name).then((res) => {
+            // zip.file(item.name, res.data, { binary: true });
+            zip.file(item.name + ".wav", _this.decryptAndDecode(res.data), {
+              binary: true,
             });
+          });
           files.push(file);
         });
         Promise.all(files).then(() => {
@@ -186,6 +192,7 @@ export default {
     catrgoryChange(tab, event) {
       let _this = this;
       _this.audioList = [];
+      _this.section = "";
       _this.conversationData = [];
       _this.conversationIdxCount = [];
       _this.sectionDesc = "";
@@ -201,13 +208,24 @@ export default {
 
       _this.section = tab;
       _this.sectionData = _this.categoryData[_this.section];
-      _this.sectionData.forEach((item) => {
-        let conversationIdx = item.name.split("-")[1];
-        if (!_this.conversationIdxCount.includes(conversationIdx)) {
-          _this.conversationIdxCount.push(conversationIdx);
-        }
-      });
-      _this.handleSectionDesc(tab);
+      if (_this.category == "bgm") {
+        _this.conversationData = _this.sectionData;
+        return;
+      }
+      if (_this.category == "fullvoice") {
+        _this.sectionData.forEach((item) => {
+          let conversationIdx = item.name.split("-")[1];
+          if (!_this.conversationIdxCount.includes(conversationIdx)) {
+            _this.conversationIdxCount.push(conversationIdx);
+          }
+        });
+        _this.handleSectionDesc(tab);
+        return;
+      }
+      if (_this.category == "voice") {
+        _this.conversationData = _this.sectionData;
+        return;
+      }
       return;
 
       _this.section = tab.props.label;
@@ -231,7 +249,14 @@ export default {
     fileClick(scope) {
       let _this = this;
       _this.currentClickIdx = scope.$index;
-      _this.getFile(_this.section + "/" + scope.row.name);
+      let filePath = "";
+      if (_this.category == "fullvoice") {
+        filePath = _this.category + "/" + _this.section + "/" + scope.row.name;
+      }
+      if (_this.category == "bgm" || _this.category == "voice") {
+        filePath = _this.category + "/" + scope.row.name;
+      }
+      _this.getFile(filePath);
     },
     handleSectionDesc(section) {
       let _this = this;
