@@ -56,8 +56,15 @@
       v-if="conversationData.length"
       class="ml-10"
       type="primary"
-      @click="downloadSelection()"
-      >download</el-button
+      @click="downloadSelection('hca')"
+      >download hca</el-button
+    >
+    <el-button
+      v-if="conversationData.length"
+      class="ml-10"
+      type="primary"
+      @click="downloadSelection('wav')"
+      >download wav</el-button
     >
 
     <el-tabs @tab-click="conversationChange">
@@ -138,7 +145,7 @@ export default {
     // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
-    downloadSelection() {
+    downloadSelection(downloadType) {
       let _this = this;
 
       let list = _this.$refs["list"].getSelectionRows();
@@ -154,9 +161,17 @@ export default {
       if (list.length <= 8) {
         let a = document.createElement("a");
         list.forEach((item) => {
-          commonApi.getFile(filePath + item.name).then((res) => {
-            a.href = window.URL.createObjectURL(new Blob([res.data]));
-            a.setAttribute("download", item.name);
+          commonApi.getFile(filePath + item.name).then(async (res) => {
+            if (downloadType == "hca") {
+              a.href = window.URL.createObjectURL(new Blob([res.data]));
+              a.setAttribute("download", item.name);
+            }
+            if (downloadType == "wav") {
+              a.href = window.URL.createObjectURL(
+                new Blob([await _this.decryptAndDecode(res.data)])
+              );
+              a.setAttribute("download", item.name + ".wav");
+            }
             a.click();
           });
         });
@@ -166,10 +181,14 @@ export default {
         let files = [];
         list.forEach((item) => {
           let file = commonApi.getFile(filePath + item.name).then((res) => {
-            // zip.file(item.name, res.data, { binary: true });
-            zip.file(item.name + ".wav", _this.decryptAndDecode(res.data), {
-              binary: true,
-            });
+            if (downloadType == "hca") {
+              zip.file(item.name, res.data, { binary: true });
+            }
+            if (downloadType == "wav") {
+              zip.file(item.name + ".wav", _this.decryptAndDecode(res.data), {
+                binary: true,
+              });
+            }
           });
           files.push(file);
         });
@@ -183,7 +202,10 @@ export default {
               },
             })
             .then((res) => {
-              FileSaver.saveAs(res, "a.zip");
+              FileSaver.saveAs(
+                res,
+                _this.category + "_" + _this.section + ".zip"
+              );
             });
         });
       }
@@ -248,6 +270,9 @@ export default {
     },
     fileClick(scope) {
       let _this = this;
+      if (scope.$index == _this.currentClickIdx) {
+        return;
+      }
       _this.currentClickIdx = scope.$index;
       let filePath = "";
       if (_this.category == "fullvoice") {
