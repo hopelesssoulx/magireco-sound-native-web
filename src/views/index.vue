@@ -236,7 +236,14 @@ export default {
       }
       if (_this.category == "fullvoice") {
         _this.sectionData.forEach((item) => {
-          let conversationIdx = item.name.split("-")[1];
+          let conversationIdx;
+          let section = parseInt(_this.section.split("_")[1]);
+          if (section < 104200) {
+            conversationIdx = item.name.split("-")[1];
+          }
+          if (section > 104200) {
+            conversationIdx = item.name.split("-")[0];
+          }
           if (!_this.conversationIdxCount.includes(conversationIdx)) {
             _this.conversationIdxCount.push(conversationIdx);
           }
@@ -264,9 +271,17 @@ export default {
       _this.audioList = [];
 
       _this.conversationIdx = tab.props.label;
-      _this.conversationData = _this.sectionData.filter((item) => {
-        return item.name.split("-")[1] == _this.conversationIdx;
-      });
+      let section = parseInt(_this.section.split("_")[1]);
+      if (section < 104200) {
+        _this.conversationData = _this.sectionData.filter((item) => {
+          return item.name.split("-")[1] == _this.conversationIdx;
+        });
+      }
+      if (section > 104200) {
+        _this.conversationData = _this.sectionData.filter((item) => {
+          return item.name.split("-")[0] == _this.conversationIdx;
+        });
+      }
     },
     fileClick(scope) {
       let _this = this;
