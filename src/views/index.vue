@@ -42,13 +42,23 @@
     <el-select
       v-if="categoryData != null"
       v-model="section"
-      class="m-2"
       placeholder="Select"
       size="large"
       style="width: 240px"
       @change="sectionChange"
     >
       <el-option v-for="(category, item, idx) in categoryData" :value="item" />
+    </el-select>
+    <el-select
+      v-if="scene0IdxCount != null"
+      v-model="Scene0Section"
+      class="ml-10"
+      placeholder="SelectScene0"
+      size="large"
+      style="width: 240px"
+      @change="Scene0Change"
+    >
+      <el-option v-for="(item, idx) in scene0IdxCount" :value="item" />
     </el-select>
 
     <span class="ml-10">{{ sectionDesc }}</span>
@@ -112,10 +122,10 @@
 </template>
 
 <script>
+import * as hcaStrUtil from "../utils/hcaStr";
 import * as commonApi from "../api/common.js";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
-import { hcaStr } from "../utils/hcaStr";
 export default {
   data() {
     return {
@@ -124,6 +134,8 @@ export default {
       categoryData: null, // {}
       section: "",
       sectionData: [],
+      Scene0Section: "",
+      scene0IdxCount: null, // {}
       conversationIdxCount: [],
       conversationIdx: 0,
       conversationData: [],
@@ -132,7 +144,7 @@ export default {
 
       sectionDesc: "",
 
-      hcaJsUrl: new URL(hcaStr, document.baseURI),
+      hcaJsUrl: new URL(hcaStrUtil.hcaStr, document.baseURI),
       hcaKey1: "0x01395C51",
       hcaKey2: "0x00000000",
       hcaMode: 16,
@@ -228,6 +240,9 @@ export default {
       _this.conversationIdxCount = [];
       _this.conversationData = [];
 
+      _this.Scene0Section = "";
+      _this.scene0IdxCount = null;
+
       _this.section = tab;
       _this.sectionData = _this.categoryData[_this.section];
       if (_this.category == "bgm") {
@@ -235,19 +250,27 @@ export default {
         return;
       }
       if (_this.category == "fullvoice") {
+        let IdxCount = [];
         _this.sectionData.forEach((item) => {
-          let conversationIdx;
+          let Idx;
           let section = parseInt(_this.section.split("_")[1]);
           if (section < 104200) {
-            conversationIdx = item.name.split("-")[1];
+            Idx = item.name.split("-")[1];
           }
           if (section > 104200) {
-            conversationIdx = item.name.split("-")[0];
+            Idx = item.name.split("-")[0];
           }
-          if (!_this.conversationIdxCount.includes(conversationIdx)) {
-            _this.conversationIdxCount.push(conversationIdx);
+          if (!IdxCount.includes(Idx)) {
+            IdxCount.push(Idx);
           }
         });
+
+        if (_this.section.split("_")[1] < 104200) {
+          _this.conversationIdxCount = IdxCount;
+        }
+        if (_this.section.split("_")[1] > 104200) {
+          _this.scene0IdxCount = IdxCount;
+        }
         _this.handleSectionDesc(tab);
         return;
       }
@@ -266,20 +289,36 @@ export default {
         }
       });
     },
+    Scene0Change(tab, event) {
+      let _this = this;
+      _this.audioList = [];
+      _this.conversationData = [];
+
+      _this.Scene0Section = tab;
+      let arr = _this.categoryData[_this.section].filter((item) => {
+        return item.name.split("-")[0] == _this.Scene0Section;
+      });
+      let IdxCount = [];
+      arr.forEach((item) => {
+        let Idx = item.name.split("-")[1];
+        if (!IdxCount.includes(Idx)) {
+          IdxCount.push(Idx);
+        }
+      });
+      _this.conversationIdxCount = IdxCount;
+    },
     conversationChange(tab, event) {
       let _this = this;
       _this.audioList = [];
 
       _this.conversationIdx = tab.props.label;
       let section = parseInt(_this.section.split("_")[1]);
-      if (section < 104200) {
-        _this.conversationData = _this.sectionData.filter((item) => {
-          return item.name.split("-")[1] == _this.conversationIdx;
-        });
-      }
+      _this.conversationData = _this.sectionData.filter((item) => {
+        return item.name.split("-")[1] == _this.conversationIdx;
+      });
       if (section > 104200) {
-        _this.conversationData = _this.sectionData.filter((item) => {
-          return item.name.split("-")[0] == _this.conversationIdx;
+        _this.conversationData = _this.conversationData.filter((item) => {
+          return item.name.split("-")[0] == _this.Scene0Section;
         });
       }
     },
