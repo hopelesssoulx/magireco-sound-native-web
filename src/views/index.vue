@@ -76,6 +76,9 @@
       @click="downloadSelection('wav')"
       >download wav</el-button
     >
+    <span class="ml-10" v-if="selectionCount"
+      >{{ selectionCount }} record(s)</span
+    >
 
     <el-tabs @tab-click="conversationChange">
       <el-tab-pane
@@ -87,6 +90,8 @@
     <el-table
       v-if="conversationData.length"
       :data="conversationData"
+      @selection-change="selectionChange"
+      @row-click="rowClick"
       ref="list"
       stripe
       height="680"
@@ -143,6 +148,7 @@ export default {
       currentClickIdx: -1,
 
       sectionDesc: "",
+      selectionCount: 0,
 
       hcaJsUrl: new URL(hcaStrUtil.hcaStr, document.baseURI),
       hcaKey1: "0x01395C51",
@@ -157,6 +163,14 @@ export default {
     // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
+    rowClick(row, column, event) {
+      let _this = this;
+      _this.$refs["list"].toggleRowSelection(row, undefined);
+    },
+    selectionChange(list) {
+      let _this = this;
+      _this.selectionCount = list.length;
+    },
     downloadSelection(downloadType) {
       let _this = this;
 
