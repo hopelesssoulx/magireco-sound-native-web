@@ -8,7 +8,11 @@ export const getFile = (fileName) => {
   return request.get("/getFile/" + fileName, { responseType: "blob" });
 };
 
-export const updateFullvoice = () => {
+export const updateBgm = (body) => {
+  return request.post("/updateBgm", body);
+};
+
+export const updateFullvoice = (body) => {
   return request.post("/updateFullvoice", body);
 };
 

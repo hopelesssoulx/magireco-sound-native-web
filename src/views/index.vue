@@ -1,15 +1,40 @@
 <template>
   <div class="index">
-    <div>
-      <span>key1=</span><input type="text" v-model="hcaKey1" />
-      <span class="ml-10">key2=</span><input type="text" v-model="hcaKey2" />
-      <br />
-      <span>decoding mode: </span
-      ><input type="number" step="8" min="0" max="32" v-model="hcaMode" />
-      <span class="ml-10">loop count: </span
-      ><input type="number" step="1" min="0" max="99" v-model="hcaLoopCount" />
-      <span class="ml-10">volume: </span
-      ><input type="number" step="1" min="0" max="100" v-model="hcaVolume" />
+    <div class="flex-left">
+      <div>
+        <span>key1=</span><input type="text" v-model="hcaKey1" />
+        <span class="ml-10">key2=</span><input type="text" v-model="hcaKey2" />
+        <br />
+        <span>decoding mode: </span
+        ><input type="number" step="8" min="0" max="32" v-model="hcaMode" />
+        <span class="ml-10">loop count: </span
+        ><input
+          type="number"
+          step="1"
+          min="0"
+          max="99"
+          v-model="hcaLoopCount"
+        />
+        <span class="ml-10">volume: </span
+        ><input type="number" step="1" min="0" max="100" v-model="hcaVolume" />
+      </div>
+      <div class="ml-10">
+        <el-button
+          type="danger"
+          v-if="editMode == false"
+          @click="editMode = true"
+          >enable edit mode</el-button
+        >
+        <el-button
+          type="warning"
+          v-if="editMode == true"
+          @click="editMode = false"
+          >disable edit mode</el-button
+        >
+        <el-button type="primary" v-if="editMode" @click="updateDB()"
+          >update</el-button
+        >
+      </div>
     </div>
 
     <el-tabs @tab-click="catrgoryChange">
@@ -116,13 +141,90 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="character" label="角色" />
+      <el-table-column prop="character" label="角色" width="180">
+        <template #default="scope">
+          <div v-if="!editMode">
+            {{ scope.row.character }}
+          </div>
+          <el-input
+            v-if="editMode"
+            v-model="conversationData[scope.$index].character"
+          >
+          </el-input>
+        </template>
+      </el-table-column>
       <el-table-column prop="ori" label="原文" />
       <el-table-column prop="chs" label="中文" />
       <el-table-column prop="eng" label="英文" />
       <el-table-column prop="otherLanguage" label="其他语言" />
-      <el-table-column prop="remark" label="备注" />
+      <el-table-column prop="remark" label="备注">
+        <template #default="scope">
+          <div v-if="!editMode">
+            {{ scope.row.remark }}
+          </div>
+          <el-input
+            v-if="editMode"
+            v-model="conversationData[scope.$index].remark"
+          >
+          </el-input>
+        </template>
+      </el-table-column>
     </el-table>
+
+    <el-drawer v-model="confirmDrawer" direction="rtl" size="90%">
+      <template #header> </template>
+      <template #default>
+        <el-table
+          v-if="listPre.length"
+          :data="listPre"
+          ref="listPre"
+          stripe
+          height="740"
+        >
+          <el-table-column label="文件名" fixed width="260">
+            <template #default="scope">
+              <div @click="fileClick(scope)" class="file">
+                {{ scope.row.fileName }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="" fixed width="360">
+            <template #default="scope">
+              <div>
+                <audio
+                  controls
+                  autoplay
+                  :src="audioList[scope.$index]"
+                  :title="scope.row.fileName + '.wav'"
+                ></audio>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="character" label="角色" width="180">
+            <template #default="scope">
+              <!-- <div v-if="!editMode">
+                {{ scope.row.character }}
+              </div>
+              <el-input
+                v-if="editMode"
+                v-model="conversationData[scope.$index].character"
+              >
+                {{ scope.row.character }}
+              </el-input> -->
+              {{ scope.row.character }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="ori" label="原文" />
+          <el-table-column prop="chs" label="中文" />
+          <el-table-column prop="eng" label="英文" />
+          <el-table-column prop="otherLanguage" label="其他语言" />
+          <el-table-column prop="remark" label="备注" />
+        </el-table>
+      </template>
+      <template #footer>
+        <el-button type="danger" @click="doUpdateDB()">update</el-button>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
@@ -149,6 +251,10 @@ export default {
 
       sectionDesc: "",
       selectionCount: 0,
+
+      editMode: true,
+      confirmDrawer: false,
+      listPre: [],
 
       hcaJsUrl: new URL(hcaStrUtil.hcaStr, document.baseURI),
       hcaKey1: "0x01395C51",
@@ -177,6 +283,13 @@ export default {
       let _this = this;
 
       let list = _this.$refs["list"].getSelectionRows();
+      if (!list.length) {
+        ElNotification({
+          title: "提示",
+          message: "无数据",
+        });
+        return;
+      }
 
       let filePath = "";
       if (_this.category == "fullvoice") {
@@ -213,9 +326,13 @@ export default {
               zip.file(item.fileName, res.data, { binary: true });
             }
             if (downloadType == "wav") {
-              zip.file(item.fileName + ".wav", _this.decryptAndDecode(res.data), {
-                binary: true,
-              });
+              zip.file(
+                item.fileName + ".wav",
+                _this.decryptAndDecode(res.data),
+                {
+                  binary: true,
+                }
+              );
             }
           });
           files.push(file);
@@ -239,6 +356,43 @@ export default {
       }
     },
 
+    updateDB() {
+      let _this = this;
+
+      if (_this.$refs["list"] == undefined) {
+        ElNotification({
+          title: "提示",
+          message: "无数据",
+        });
+        return;
+      }
+
+      _this.listPre = _this.$refs["list"].getSelectionRows();
+      if (!_this.listPre.length) {
+        ElNotification({
+          title: "提示",
+          message: "无数据",
+        });
+        return;
+      }
+
+      _this.confirmDrawer = true;
+    },
+    doUpdateDB() {
+      let _this = this;
+
+      if (_this.category == "bgm") {
+        commonApi.updateBgm(_this.listPre);
+      }
+      if (_this.category == "fullvoice") {
+        commonApi.updateFullvoice(_this.listPre);
+      }
+      if (_this.category == "voice") {
+      }
+      _this.confirmDrawer = false;
+      _this.editMode = false;
+    },
+
     catrgoryChange(tab, event) {
       let _this = this;
       _this.audioList = [];
@@ -246,6 +400,7 @@ export default {
       _this.conversationData = [];
       _this.conversationIdxCount = [];
       _this.sectionDesc = "";
+      _this.listPre = [];
 
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];
@@ -255,6 +410,7 @@ export default {
       _this.audioList = [];
       _this.conversationIdxCount = [];
       _this.conversationData = [];
+      _this.listPre = [];
 
       _this.Scene0Section = "";
       _this.scene0IdxCount = null;
@@ -309,6 +465,7 @@ export default {
       let _this = this;
       _this.audioList = [];
       _this.conversationData = [];
+      _this.listPre = [];
 
       _this.Scene0Section = tab;
       let arr = _this.categoryData[_this.section].filter((item) => {
@@ -326,6 +483,7 @@ export default {
     conversationChange(tab, event) {
       let _this = this;
       _this.audioList = [];
+      _this.listPre = [];
 
       _this.conversationIdx = tab.props.label;
       let section = parseInt(_this.section.split("_")[1]);
@@ -346,7 +504,8 @@ export default {
       _this.currentClickIdx = scope.$index;
       let filePath = "";
       if (_this.category == "fullvoice") {
-        filePath = _this.category + "/" + _this.section + "/" + scope.row.fileName;
+        filePath =
+          _this.category + "/" + _this.section + "/" + scope.row.fileName;
       }
       if (_this.category == "bgm" || _this.category == "voice") {
         filePath = _this.category + "/" + scope.row.fileName;
@@ -436,6 +595,16 @@ export default {
 <style lang="scss" scoped>
 .ml-10 {
   margin-left: 10px;
+}
+.flex-left {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .file {
