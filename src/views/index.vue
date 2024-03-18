@@ -486,7 +486,8 @@ export default {
       _this.listPre = [];
 
       _this.Scene0Section = tab;
-      let arr = _this.categoryData[_this.section].filter((item) => {
+      // let arr = _this.categoryData[_this.section].filter((item) => {
+      let arr = _this.sectionData.filter((item) => {
         return item.file_name.split("-")[0] == _this.Scene0Section;
       });
       let IdxCount = [];
