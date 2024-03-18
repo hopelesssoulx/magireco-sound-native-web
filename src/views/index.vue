@@ -300,63 +300,41 @@ export default {
         filePath = _this.category + "/";
       }
 
-      if (list.length <= 8) {
-        let a = document.createElement("a");
-        list.forEach((item) => {
-          commonApi.getFile(filePath + item.file_name).then(async (res) => {
-            if (downloadType == "hca") {
-              a.href = window.URL.createObjectURL(new Blob([res.data]));
-              a.setAttribute("download", item.file_name);
-            }
-            if (downloadType == "wav") {
-              a.href = window.URL.createObjectURL(
-                new Blob([await _this.decryptAndDecode(res.data)])
-              );
-              a.setAttribute("download", item.file_name + ".wav");
-            }
-            a.click();
+      let zip = new JSZip();
+      let files = [];
+      list.forEach((item) => {
+        let file = commonApi.getFile(filePath + item.file_name).then((res) => {
+          if (downloadType == "hca") {
+            zip.file(item.file_name, res.data, { binary: true });
+          }
+          if (downloadType == "wav") {
+            zip.file(
+              item.file_name + ".wav",
+              _this.decryptAndDecode(res.data),
+              {
+                binary: true,
+              }
+            );
+          }
+        });
+        files.push(file);
+      });
+      Promise.all(files).then(() => {
+        zip
+          .generateAsync({
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: {
+              level: 1,
+            },
+          })
+          .then((res) => {
+            FileSaver.saveAs(
+              res,
+              _this.category + "_" + _this.section + ".zip"
+            );
           });
-        });
-      }
-      if (list.length > 8) {
-        let zip = new JSZip();
-        let files = [];
-        list.forEach((item) => {
-          let file = commonApi
-            .getFile(filePath + item.file_name)
-            .then((res) => {
-              if (downloadType == "hca") {
-                zip.file(item.file_name, res.data, { binary: true });
-              }
-              if (downloadType == "wav") {
-                zip.file(
-                  item.file_name + ".wav",
-                  _this.decryptAndDecode(res.data),
-                  {
-                    binary: true,
-                  }
-                );
-              }
-            });
-          files.push(file);
-        });
-        Promise.all(files).then(() => {
-          zip
-            .generateAsync({
-              type: "blob",
-              compression: "DEFLATE",
-              compressionOptions: {
-                level: 1,
-              },
-            })
-            .then((res) => {
-              FileSaver.saveAs(
-                res,
-                _this.category + "_" + _this.section + ".zip"
-              );
-            });
-        });
-      }
+      });
     },
 
     updateDB() {
