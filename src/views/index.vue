@@ -72,7 +72,8 @@
       style="width: 240px"
       @change="sectionChange"
     >
-      <el-option v-for="(category, item, idx) in categoryData" :value="item" />
+      <!-- <el-option v-for="(category, item, idx) in categoryData" :value="item" /> -->
+      <el-option v-for="(item, idx) in categoryData" :value="item" />
     </el-select>
     <el-select
       v-if="scene0IdxCount != null"
@@ -125,7 +126,7 @@
       <el-table-column label="文件名" fixed width="260">
         <template #default="scope">
           <div @click="fileClick(scope)" class="file">
-            {{ scope.row.fileName }}
+            {{ scope.row.file_name }}
           </div>
         </template>
       </el-table-column>
@@ -136,7 +137,7 @@
               controls
               autoplay
               :src="audioList[scope.$index]"
-              :title="scope.row.fileName + '.wav'"
+              :title="scope.row.file_name + '.wav'"
             ></audio>
           </div>
         </template>
@@ -184,7 +185,7 @@
           <el-table-column label="文件名" fixed width="260">
             <template #default="scope">
               <div @click="fileClick(scope)" class="file">
-                {{ scope.row.fileName }}
+                {{ scope.row.file_name }}
               </div>
             </template>
           </el-table-column>
@@ -195,7 +196,7 @@
                   controls
                   autoplay
                   :src="audioList[scope.$index]"
-                  :title="scope.row.fileName + '.wav'"
+                  :title="scope.row.file_name + '.wav'"
                 ></audio>
               </div>
             </template>
@@ -302,16 +303,16 @@ export default {
       if (list.length <= 8) {
         let a = document.createElement("a");
         list.forEach((item) => {
-          commonApi.getFile(filePath + item.fileName).then(async (res) => {
+          commonApi.getFile(filePath + item.file_name).then(async (res) => {
             if (downloadType == "hca") {
               a.href = window.URL.createObjectURL(new Blob([res.data]));
-              a.setAttribute("download", item.fileName);
+              a.setAttribute("download", item.file_name);
             }
             if (downloadType == "wav") {
               a.href = window.URL.createObjectURL(
                 new Blob([await _this.decryptAndDecode(res.data)])
               );
-              a.setAttribute("download", item.fileName + ".wav");
+              a.setAttribute("download", item.file_name + ".wav");
             }
             a.click();
           });
@@ -321,20 +322,22 @@ export default {
         let zip = new JSZip();
         let files = [];
         list.forEach((item) => {
-          let file = commonApi.getFile(filePath + item.fileName).then((res) => {
-            if (downloadType == "hca") {
-              zip.file(item.fileName, res.data, { binary: true });
-            }
-            if (downloadType == "wav") {
-              zip.file(
-                item.fileName + ".wav",
-                _this.decryptAndDecode(res.data),
-                {
-                  binary: true,
-                }
-              );
-            }
-          });
+          let file = commonApi
+            .getFile(filePath + item.file_name)
+            .then((res) => {
+              if (downloadType == "hca") {
+                zip.file(item.file_name, res.data, { binary: true });
+              }
+              if (downloadType == "wav") {
+                zip.file(
+                  item.file_name + ".wav",
+                  _this.decryptAndDecode(res.data),
+                  {
+                    binary: true,
+                  }
+                );
+              }
+            });
           files.push(file);
         });
         Promise.all(files).then(() => {
@@ -405,7 +408,7 @@ export default {
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];
     },
-    sectionChange(tab, event) {
+    async sectionChange(tab, event) {
       let _this = this;
       _this.audioList = [];
       _this.conversationIdxCount = [];
@@ -416,7 +419,22 @@ export default {
       _this.scene0IdxCount = null;
 
       _this.section = tab;
-      _this.sectionData = _this.categoryData[_this.section];
+      if (_this.category == "bgm") {
+        await commonApi.getListBgm(_this.section).then((res) => {
+          _this.sectionData = res.data;
+        });
+      }
+      if (_this.category == "fullvoice") {
+        await commonApi.getListFullvoice(_this.section).then((res) => {
+          _this.sectionData = res.data;
+        });
+      }
+      if (_this.category == "voice") {
+        await commonApi.getListVoice(_this.section).then((res) => {
+          _this.sectionData = res.data;
+        });
+      }
+      // _this.sectionData = _this.categoryData[_this.section];
       if (_this.category == "bgm") {
         _this.conversationData = _this.sectionData;
         return;
@@ -427,10 +445,10 @@ export default {
           let Idx;
           let section = parseInt(_this.section.split("_")[1]);
           if (section < 104200) {
-            Idx = item.fileName.split("-")[1];
+            Idx = item.file_name.split("-")[1];
           }
           if (section > 104200) {
-            Idx = item.fileName.split("-")[0];
+            Idx = item.file_name.split("-")[0];
           }
           if (!IdxCount.includes(Idx)) {
             IdxCount.push(Idx);
@@ -455,7 +473,7 @@ export default {
       _this.section = tab.props.label;
       _this.sectionData = _this.categoryData[_this.section];
       _this.sectionData.forEach((item) => {
-        let conversationIdx = item.fileName.split("-")[1];
+        let conversationIdx = item.file_name.split("-")[1];
         if (!_this.conversationIdxCount.includes(conversationIdx)) {
           _this.conversationIdxCount.push(conversationIdx);
         }
@@ -469,11 +487,11 @@ export default {
 
       _this.Scene0Section = tab;
       let arr = _this.categoryData[_this.section].filter((item) => {
-        return item.fileName.split("-")[0] == _this.Scene0Section;
+        return item.file_name.split("-")[0] == _this.Scene0Section;
       });
       let IdxCount = [];
       arr.forEach((item) => {
-        let Idx = item.fileName.split("-")[1];
+        let Idx = item.file_name.split("-")[1];
         if (!IdxCount.includes(Idx)) {
           IdxCount.push(Idx);
         }
@@ -488,11 +506,11 @@ export default {
       _this.conversationIdx = tab.props.label;
       let section = parseInt(_this.section.split("_")[1]);
       _this.conversationData = _this.sectionData.filter((item) => {
-        return item.fileName.split("-")[1] == _this.conversationIdx;
+        return item.file_name.split("-")[1] == _this.conversationIdx;
       });
       if (section > 104200) {
         _this.conversationData = _this.conversationData.filter((item) => {
-          return item.fileName.split("-")[0] == _this.Scene0Section;
+          return item.file_name.split("-")[0] == _this.Scene0Section;
         });
       }
     },
@@ -505,10 +523,10 @@ export default {
       let filePath = "";
       if (_this.category == "fullvoice") {
         filePath =
-          _this.category + "/" + _this.section + "/" + scope.row.fileName;
+          _this.category + "/" + _this.section + "/" + scope.row.file_name;
       }
       if (_this.category == "bgm" || _this.category == "voice") {
-        filePath = _this.category + "/" + scope.row.fileName;
+        filePath = _this.category + "/" + scope.row.file_name;
       }
       _this.getFile(filePath);
     },
@@ -545,7 +563,10 @@ export default {
 
     getSoundNative() {
       let _this = this;
-      commonApi.getList().then((res) => {
+      // commonApi.getList().then((res) => {
+      //   _this.soundNative = res.data;
+      // });
+      commonApi.getListBrief().then((res) => {
         _this.soundNative = res.data;
       });
     },
