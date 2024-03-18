@@ -100,7 +100,7 @@
       <el-table-column label="文件名" fixed width="260">
         <template #default="scope">
           <div @click="fileClick(scope)" class="file">
-            {{ scope.row.name }}
+            {{ scope.row.fileName }}
           </div>
         </template>
       </el-table-column>
@@ -111,7 +111,7 @@
               controls
               autoplay
               :src="audioList[scope.$index]"
-              :title="scope.row.name + '.wav'"
+              :title="scope.row.fileName + '.wav'"
             ></audio>
           </div>
         </template>
@@ -160,6 +160,8 @@ export default {
   },
   created() {
     this.getSoundNative();
+    // commonApi.updateFullvoice()
+    // commonApi.updateVoice()
     // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
@@ -187,16 +189,16 @@ export default {
       if (list.length <= 8) {
         let a = document.createElement("a");
         list.forEach((item) => {
-          commonApi.getFile(filePath + item.name).then(async (res) => {
+          commonApi.getFile(filePath + item.fileName).then(async (res) => {
             if (downloadType == "hca") {
               a.href = window.URL.createObjectURL(new Blob([res.data]));
-              a.setAttribute("download", item.name);
+              a.setAttribute("download", item.fileName);
             }
             if (downloadType == "wav") {
               a.href = window.URL.createObjectURL(
                 new Blob([await _this.decryptAndDecode(res.data)])
               );
-              a.setAttribute("download", item.name + ".wav");
+              a.setAttribute("download", item.fileName + ".wav");
             }
             a.click();
           });
@@ -206,12 +208,12 @@ export default {
         let zip = new JSZip();
         let files = [];
         list.forEach((item) => {
-          let file = commonApi.getFile(filePath + item.name).then((res) => {
+          let file = commonApi.getFile(filePath + item.fileName).then((res) => {
             if (downloadType == "hca") {
-              zip.file(item.name, res.data, { binary: true });
+              zip.file(item.fileName, res.data, { binary: true });
             }
             if (downloadType == "wav") {
-              zip.file(item.name + ".wav", _this.decryptAndDecode(res.data), {
+              zip.file(item.fileName + ".wav", _this.decryptAndDecode(res.data), {
                 binary: true,
               });
             }
@@ -269,10 +271,10 @@ export default {
           let Idx;
           let section = parseInt(_this.section.split("_")[1]);
           if (section < 104200) {
-            Idx = item.name.split("-")[1];
+            Idx = item.fileName.split("-")[1];
           }
           if (section > 104200) {
-            Idx = item.name.split("-")[0];
+            Idx = item.fileName.split("-")[0];
           }
           if (!IdxCount.includes(Idx)) {
             IdxCount.push(Idx);
@@ -297,7 +299,7 @@ export default {
       _this.section = tab.props.label;
       _this.sectionData = _this.categoryData[_this.section];
       _this.sectionData.forEach((item) => {
-        let conversationIdx = item.name.split("-")[1];
+        let conversationIdx = item.fileName.split("-")[1];
         if (!_this.conversationIdxCount.includes(conversationIdx)) {
           _this.conversationIdxCount.push(conversationIdx);
         }
@@ -310,11 +312,11 @@ export default {
 
       _this.Scene0Section = tab;
       let arr = _this.categoryData[_this.section].filter((item) => {
-        return item.name.split("-")[0] == _this.Scene0Section;
+        return item.fileName.split("-")[0] == _this.Scene0Section;
       });
       let IdxCount = [];
       arr.forEach((item) => {
-        let Idx = item.name.split("-")[1];
+        let Idx = item.fileName.split("-")[1];
         if (!IdxCount.includes(Idx)) {
           IdxCount.push(Idx);
         }
@@ -328,11 +330,11 @@ export default {
       _this.conversationIdx = tab.props.label;
       let section = parseInt(_this.section.split("_")[1]);
       _this.conversationData = _this.sectionData.filter((item) => {
-        return item.name.split("-")[1] == _this.conversationIdx;
+        return item.fileName.split("-")[1] == _this.conversationIdx;
       });
       if (section > 104200) {
         _this.conversationData = _this.conversationData.filter((item) => {
-          return item.name.split("-")[0] == _this.Scene0Section;
+          return item.fileName.split("-")[0] == _this.Scene0Section;
         });
       }
     },
@@ -344,10 +346,10 @@ export default {
       _this.currentClickIdx = scope.$index;
       let filePath = "";
       if (_this.category == "fullvoice") {
-        filePath = _this.category + "/" + _this.section + "/" + scope.row.name;
+        filePath = _this.category + "/" + _this.section + "/" + scope.row.fileName;
       }
       if (_this.category == "bgm" || _this.category == "voice") {
-        filePath = _this.category + "/" + scope.row.name;
+        filePath = _this.category + "/" + scope.row.fileName;
       }
       _this.getFile(filePath);
     },
