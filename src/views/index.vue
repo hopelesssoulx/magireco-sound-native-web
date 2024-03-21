@@ -142,7 +142,12 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="character" label="角色" width="160">
+      <el-table-column
+        prop=""
+        label="角色"
+        width="160"
+        v-if="category == 'fullvoice'"
+      >
         <template #default="scope">
           <el-input
             disabled
@@ -161,11 +166,99 @@
           </el-input>
         </template>
       </el-table-column>
-      <el-table-column prop="ori" label="原文" />
-      <el-table-column prop="chs" label="中文" />
-      <el-table-column prop="eng" label="英文" />
-      <el-table-column prop="otherLanguage" label="其他语言" />
-      <el-table-column prop="remark" label="备注">
+      <el-table-column
+        prop=""
+        label="原文"
+        v-if="category == 'fullvoice' || category == 'voice'"
+      >
+        <template #default="scope">
+          <el-input
+            disabled
+            type="textarea"
+            autosize
+            v-if="!editMode"
+            v-model="conversationData[scope.$index].ori"
+          >
+          </el-input>
+          <el-input
+            type="textarea"
+            autosize
+            v-if="editMode"
+            v-model="conversationData[scope.$index].ori"
+          >
+          </el-input>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop=""
+        label="中文"
+        v-if="category == 'fullvoice' || category == 'voice'"
+      >
+        <template #default="scope">
+          <el-input
+            disabled
+            type="textarea"
+            autosize
+            v-if="!editMode"
+            v-model="conversationData[scope.$index].chs"
+          >
+          </el-input>
+          <el-input
+            type="textarea"
+            autosize
+            v-if="editMode"
+            v-model="conversationData[scope.$index].chs"
+          >
+          </el-input>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop=""
+        label="英文"
+        v-if="category == 'fullvoice' || category == 'voice'"
+      >
+        <template #default="scope">
+          <el-input
+            disabled
+            type="textarea"
+            autosize
+            v-if="!editMode"
+            v-model="conversationData[scope.$index].eng"
+          >
+          </el-input>
+          <el-input
+            type="textarea"
+            autosize
+            v-if="editMode"
+            v-model="conversationData[scope.$index].eng"
+          >
+          </el-input>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop=""
+        label="其他语言"
+        v-if="category == 'fullvoice' || category == 'voice'"
+      >
+        <template #default="scope">
+          <el-input
+            disabled
+            type="textarea"
+            autosize
+            v-if="!editMode"
+            v-model="conversationData[scope.$index].other_language"
+          >
+          </el-input>
+          <el-input
+            type="textarea"
+            autosize
+            v-if="editMode"
+            v-model="conversationData[scope.$index].other_language"
+          >
+          </el-input>
+        </template>
+      </el-table-column>
+      <el-table-column prop="" label="备注">
         <template #default="scope">
           <el-input
             disabled
@@ -215,25 +308,141 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="character" label="角色" width="180">
+          <el-table-column
+            prop=""
+            label="角色"
+            width="160"
+            v-if="category == 'fullvoice'"
+          >
             <template #default="scope">
-              <!-- <div v-if="!editMode">
-                {{ scope.row.character }}
-              </div>
               <el-input
+                disabled
+                type="textarea"
+                autosize
+                v-if="!editMode"
+                v-model="conversationData[scope.$index].character"
+              >
+              </el-input>
+              <el-input
+                type="textarea"
+                autosize
                 v-if="editMode"
                 v-model="conversationData[scope.$index].character"
               >
-                {{ scope.row.character }}
-              </el-input> -->
-              {{ scope.row.character }}
+              </el-input>
             </template>
           </el-table-column>
-          <el-table-column prop="ori" label="原文" />
-          <el-table-column prop="chs" label="中文" />
-          <el-table-column prop="eng" label="英文" />
-          <el-table-column prop="otherLanguage" label="其他语言" />
-          <el-table-column prop="remark" label="备注" />
+          <el-table-column
+            prop=""
+            label="原文"
+            v-if="category == 'fullvoice' || category == 'voice'"
+          >
+            <template #default="scope">
+              <el-input
+                disabled
+                type="textarea"
+                autosize
+                v-if="!editMode"
+                v-model="conversationData[scope.$index].ori"
+              >
+              </el-input>
+              <el-input
+                type="textarea"
+                autosize
+                v-if="editMode"
+                v-model="conversationData[scope.$index].ori"
+              >
+              </el-input>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop=""
+            label="中文"
+            v-if="category == 'fullvoice' || category == 'voice'"
+          >
+            <template #default="scope">
+              <el-input
+                disabled
+                type="textarea"
+                autosize
+                v-if="!editMode"
+                v-model="conversationData[scope.$index].chs"
+              >
+              </el-input>
+              <el-input
+                type="textarea"
+                autosize
+                v-if="editMode"
+                v-model="conversationData[scope.$index].chs"
+              >
+              </el-input>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop=""
+            label="英文"
+            v-if="category == 'fullvoice' || category == 'voice'"
+          >
+            <template #default="scope">
+              <el-input
+                disabled
+                type="textarea"
+                autosize
+                v-if="!editMode"
+                v-model="conversationData[scope.$index].eng"
+              >
+              </el-input>
+              <el-input
+                type="textarea"
+                autosize
+                v-if="editMode"
+                v-model="conversationData[scope.$index].eng"
+              >
+              </el-input>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop=""
+            label="其他语言"
+            v-if="category == 'fullvoice' || category == 'voice'"
+          >
+            <template #default="scope">
+              <el-input
+                disabled
+                type="textarea"
+                autosize
+                v-if="!editMode"
+                v-model="conversationData[scope.$index].other_language"
+              >
+              </el-input>
+              <el-input
+                type="textarea"
+                autosize
+                v-if="editMode"
+                v-model="conversationData[scope.$index].other_language"
+              >
+              </el-input>
+            </template>
+          </el-table-column>
+          <el-table-column prop="" label="备注">
+            <template #default="scope">
+              <el-input
+                disabled
+                type="textarea"
+                autosize
+                v-if="!editMode"
+                v-model="conversationData[scope.$index].remark"
+              >
+              </el-input>
+              <el-input
+                type="textarea"
+                autosize
+                v-if="editMode"
+                v-model="conversationData[scope.$index].remark"
+              >
+              </el-input>
+            </template>
+          </el-table-column>
         </el-table>
       </template>
       <template #footer>
