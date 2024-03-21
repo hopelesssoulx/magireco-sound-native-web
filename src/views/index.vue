@@ -142,12 +142,19 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="character" label="角色" width="180">
+      <el-table-column prop="character" label="角色" width="160">
         <template #default="scope">
-          <div v-if="!editMode">
-            {{ scope.row.character }}
-          </div>
           <el-input
+            disabled
+            type="textarea"
+            autosize
+            v-if="!editMode"
+            v-model="conversationData[scope.$index].character"
+          >
+          </el-input>
+          <el-input
+            type="textarea"
+            autosize
             v-if="editMode"
             v-model="conversationData[scope.$index].character"
           >
@@ -160,10 +167,17 @@
       <el-table-column prop="otherLanguage" label="其他语言" />
       <el-table-column prop="remark" label="备注">
         <template #default="scope">
-          <div v-if="!editMode">
-            {{ scope.row.remark }}
-          </div>
           <el-input
+            disabled
+            type="textarea"
+            autosize
+            v-if="!editMode"
+            v-model="conversationData[scope.$index].remark"
+          >
+          </el-input>
+          <el-input
+            type="textarea"
+            autosize
             v-if="editMode"
             v-model="conversationData[scope.$index].remark"
           >
@@ -491,15 +505,14 @@ export default {
         return;
       }
       _this.currentClickIdx = scope.$index;
-      let filePath = "";
       if (_this.category == "fullvoice") {
-        filePath =
-          _this.category + "/" + _this.section + "/" + scope.row.file_name;
+        _this.getFile(
+          _this.category + "/" + _this.section + "/" + scope.row.file_name
+        );
       }
       if (_this.category == "bgm" || _this.category == "voice") {
-        filePath = _this.category + "/" + scope.row.file_name;
+        _this.getFile(_this.category + "/" + scope.row.file_name);
       }
-      _this.getFile(filePath);
     },
     handleSectionDesc(section) {
       let _this = this;
@@ -548,6 +561,7 @@ export default {
     },
     async decryptAndDecode(hca) {
       let _this = this;
+
       let res = await fetch(_this.hcaJsUrl.href);
       let blob = new Blob([await res.arrayBuffer()], {
         type: "text/javascript",
