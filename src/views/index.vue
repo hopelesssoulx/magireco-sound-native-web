@@ -267,8 +267,6 @@ export default {
   },
   created() {
     this.getSoundNative();
-    // commonApi.updateFullvoice()
-    // commonApi.updateVoice()
     // console.log(JSON.parse(JSON.stringify()));
   },
   methods: {
@@ -376,75 +374,67 @@ export default {
 
     catrgoryChange(tab, event) {
       let _this = this;
-      _this.audioList = [];
       _this.section = "";
-      _this.conversationData = [];
-      _this.conversationIdxCount = [];
       _this.sectionDesc = "";
+      _this.conversationIdxCount = [];
+      _this.conversationData = [];
+      _this.audioList = [];
       _this.listPre = [];
+      _this.selectionCount = 0;
 
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];
     },
     async sectionChange(tab, event) {
       let _this = this;
-      _this.audioList = [];
       _this.conversationIdxCount = [];
       _this.conversationData = [];
+      _this.audioList = [];
       _this.listPre = [];
+      _this.selectionCount = 0;
 
       _this.Scene0Section = "";
       _this.scene0IdxCount = null;
 
       _this.section = tab;
+      // _this.sectionData = _this.categoryData[_this.section];
+
       if (_this.category == "bgm") {
         await commonApi.getListBgm(_this.section).then((res) => {
-          _this.sectionData = res.data;
+          _this.conversationData = res.data;
         });
       }
       if (_this.category == "fullvoice") {
         await commonApi.getListFullvoice(_this.section).then((res) => {
           _this.sectionData = res.data;
+          let IdxCount = [];
+          _this.sectionData.forEach((item) => {
+            let Idx;
+            let section = parseInt(_this.section.split("_")[1]);
+            if (section < 104200) {
+              Idx = item.file_name.split("-")[1];
+            }
+            if (section > 104200) {
+              Idx = item.file_name.split("-")[0];
+            }
+            if (!IdxCount.includes(Idx)) {
+              IdxCount.push(Idx);
+            }
+          });
+
+          if (_this.section.split("_")[1] < 104200) {
+            _this.conversationIdxCount = IdxCount;
+          }
+          if (_this.section.split("_")[1] > 104200) {
+            _this.scene0IdxCount = IdxCount;
+          }
+          _this.handleSectionDesc(tab);
         });
       }
       if (_this.category == "voice") {
         await commonApi.getListVoice(_this.section).then((res) => {
-          _this.sectionData = res.data;
+          _this.conversationData = res.data;
         });
-      }
-      // _this.sectionData = _this.categoryData[_this.section];
-      if (_this.category == "bgm") {
-        _this.conversationData = _this.sectionData;
-        return;
-      }
-      if (_this.category == "fullvoice") {
-        let IdxCount = [];
-        _this.sectionData.forEach((item) => {
-          let Idx;
-          let section = parseInt(_this.section.split("_")[1]);
-          if (section < 104200) {
-            Idx = item.file_name.split("-")[1];
-          }
-          if (section > 104200) {
-            Idx = item.file_name.split("-")[0];
-          }
-          if (!IdxCount.includes(Idx)) {
-            IdxCount.push(Idx);
-          }
-        });
-
-        if (_this.section.split("_")[1] < 104200) {
-          _this.conversationIdxCount = IdxCount;
-        }
-        if (_this.section.split("_")[1] > 104200) {
-          _this.scene0IdxCount = IdxCount;
-        }
-        _this.handleSectionDesc(tab);
-        return;
-      }
-      if (_this.category == "voice") {
-        _this.conversationData = _this.sectionData;
-        return;
       }
       return;
 
@@ -459,11 +449,13 @@ export default {
     },
     Scene0Change(tab, event) {
       let _this = this;
-      _this.audioList = [];
       _this.conversationData = [];
+      _this.audioList = [];
       _this.listPre = [];
+      _this.selectionCount = 0;
 
       _this.Scene0Section = tab;
+
       // let arr = _this.categoryData[_this.section].filter((item) => {
       let arr = _this.sectionData.filter((item) => {
         return item.file_name.split("-")[0] == _this.Scene0Section;
