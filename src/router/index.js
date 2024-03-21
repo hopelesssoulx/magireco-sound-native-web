@@ -14,6 +14,12 @@ const router = createRouter({
       meta: { title: "index" },
       component: () => import("../views/index.vue"),
     },
+    {
+      path: "/index2",
+      name: "index2",
+      meta: { title: "index2" },
+      component: () => import("../views/index2.vue"),
+    },
   ],
 });
 
