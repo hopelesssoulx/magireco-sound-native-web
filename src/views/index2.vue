@@ -89,14 +89,14 @@
 
     <span class="ml-10">{{ sectionDesc }}</span>
     <el-button
-      v-if="conversationData.length"
+      v-if="tableData.length"
       class="ml-10"
       type="primary"
       @click="downloadSelection('hca')"
       >download hca</el-button
     >
     <el-button
-      v-if="conversationData.length"
+      v-if="tableData.length"
       class="ml-10"
       type="primary"
       @click="downloadSelection('wav')"
@@ -116,6 +116,7 @@
     <el-table-v2
       :width="1800"
       :height="680"
+      :estimated-row-height="80"
       fixed
       v-if="tableData.length"
       :data="tableData"
@@ -124,7 +125,16 @@
 
     <el-drawer v-model="confirmDrawer" direction="rtl" size="90%">
       <template #header> </template>
-      <template #default> </template>
+      <template #default>
+        <el-table-v2
+          :width="1660"
+          :height="680"
+          fixed
+          v-if="tableData.length"
+          :data="listPre"
+          :columns="listPreColumns"
+        />
+      </template>
       <template #footer>
         <el-button type="danger" @click="doUpdateDB()">update</el-button>
       </template>
@@ -133,10 +143,12 @@
 </template>
 
 <script lang="jsx">
+import { h } from "vue";
 import * as hcaStrUtil from "../utils/hcaStr";
 import * as commonApi from "../api/common.js";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
+import { ElCheckbox } from "element-plus";
 export default {
   data() {
     return {
@@ -169,20 +181,44 @@ export default {
 
       tableColumns: [
         {
+          // key: "selection",
+          width: 50,
+          // cellRenderer: (cellData) => {
+          //   const onChange = (val) => (cellData.rowData.checked = val);
+          //   return (
+          //     <SelectionCell
+          //       value={cellData.rowData.checked}
+          //       onChange={onChange}
+          //     />
+          //   );
+          // },
+          cellRenderer: (cellData) =>
+            h(ElCheckbox, {
+              modelValue: this.tableData[cellData.rowIndex].selected,
+              "onUpdate:modelValue": () =>
+                (this.tableData[cellData.rowIndex].selected =
+                  !this.tableData[cellData.rowIndex].selected),
+              onChange: (val) => {
+                // this.tableData[cellData.rowIndex].selected = this.tableData[cellData.rowIndex].selected;
+                // console.log(JSON.parse(JSON.stringify(this.tableData)));
+              },
+            }),
+        },
+        {
           key: "file_name",
           dataKey: "file_name",
           title: "file_name",
           width: 260,
           cellRenderer: (cellData) => (
-            <span onClick={() => this.fileClick(cellData)}>
+            <div class="file" onClick={() => this.fileClick(cellData)}>
               {cellData.rowData.file_name}
-            </span>
+            </div>
           ),
         },
         {
-          key: "audio",
-          dataKey: "audio",
-          title: "audio",
+          key: "",
+          dataKey: "",
+          title: "",
           width: 360,
           cellRenderer: (cellData) => (
             <audio
@@ -195,10 +231,45 @@ export default {
         },
         { key: "remark", dataKey: "remark", title: "remark", width: 100 },
       ],
-      tableData: [
-        // { file_name: "123", remark: "" },
-        // { file_name: "123", remark: "" },
+      listPreColumns: [
+        {
+          width: 50,
+          cellRenderer: (cellData) =>
+            h(ElCheckbox, {
+              modelValue: this.listPre[cellData.rowIndex].selected,
+              "onUpdate:modelValue": () =>
+                (this.listPre[cellData.rowIndex].selected =
+                  !this.listPre[cellData.rowIndex].selected),
+            }),
+        },
+        {
+          key: "file_name",
+          dataKey: "file_name",
+          title: "file_name",
+          width: 260,
+          cellRenderer: (cellData) => (
+            <span onClick={() => this.fileClick(cellData)}>
+              {cellData.rowData.file_name}
+            </span>
+          ),
+        },
+        {
+          key: "",
+          dataKey: "",
+          title: "",
+          width: 360,
+          cellRenderer: (cellData) => (
+            <audio
+              controls
+              autoplay
+              src={this.audioList[cellData.rowIndex]}
+              title={cellData.rowData.file_name + ".wav"}
+            />
+          ),
+        },
+        { key: "remark", dataKey: "remark", title: "remark", width: 100 },
       ],
+      tableData: [],
     };
   },
   created() {
@@ -217,7 +288,10 @@ export default {
     downloadSelection(downloadType) {
       let _this = this;
 
-      let list = _this.$refs["list"].getSelectionRows();
+      // let list = _this.$refs["list"].getSelectionRows();
+      let list = _this.tableData.filter((item) => {
+        return item.selected == true;
+      });
       if (!list.length) {
         ElNotification({
           title: "提示",
@@ -274,6 +348,12 @@ export default {
     updateDB() {
       let _this = this;
 
+      _this.listPre = _this.tableData.filter((item) => {
+        return item.selected == true;
+      });
+      _this.confirmDrawer = true;
+      return;
+
       if (_this.$refs["list"] == undefined) {
         ElNotification({
           title: "提示",
@@ -313,7 +393,8 @@ export default {
       _this.section = "";
       _this.sectionDesc = "";
       _this.conversationIdxCount = [];
-      _this.conversationData = [];
+      // _this.conversationData = [];
+      _this.tableData = [];
       _this.audioList = [];
       _this.listPre = [];
       _this.selectionCount = 0;
@@ -324,7 +405,8 @@ export default {
     async sectionChange(tab, event) {
       let _this = this;
       _this.conversationIdxCount = [];
-      _this.conversationData = [];
+      // _this.conversationData = [];
+      _this.tableData = [];
       _this.audioList = [];
       _this.listPre = [];
       _this.selectionCount = 0;
@@ -387,7 +469,8 @@ export default {
     },
     Scene0Change(tab, event) {
       let _this = this;
-      _this.conversationData = [];
+      // _this.conversationData = [];
+      _this.tableData = [];
       _this.audioList = [];
       _this.listPre = [];
       _this.selectionCount = 0;
@@ -424,6 +507,9 @@ export default {
           return item.file_name.split("-")[0] == _this.Scene0Section;
         });
       }
+      _this.tableData.forEach((item, idx) => {
+        _this.tableData[idx].selected = false;
+      });
     },
     fileClick(cellData) {
       let _this = this;
