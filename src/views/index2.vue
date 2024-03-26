@@ -116,7 +116,8 @@
     <el-table-v2
       :width="1800"
       :height="680"
-      :estimated-row-height="80"
+      :estimated-row-height="120"
+      :row-class-name="rowClassName"
       fixed
       v-if="tableData.length"
       :data="tableData"
@@ -129,6 +130,8 @@
         <el-table-v2
           :width="1660"
           :height="680"
+          :estimated-row-height="120"
+          :row-class-name="rowClassName"
           fixed
           v-if="tableData.length"
           :data="listPre"
@@ -149,6 +152,7 @@ import * as commonApi from "../api/common.js";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
 import { ElCheckbox } from "element-plus";
+import _ from "lodash";
 export default {
   data() {
     return {
@@ -179,10 +183,11 @@ export default {
       hcaLoopCount: 0,
       hcaVolume: 100,
 
-      tableColumns: [
+      fullColumns: [
         {
           // key: "selection",
-          width: 50,
+          fixed: true,
+          width: 40,
           // cellRenderer: (cellData) => {
           //   const onChange = (val) => (cellData.rowData.checked = val);
           //   return (
@@ -192,6 +197,30 @@ export default {
           //     />
           //   );
           // },
+          headerCellRenderer: () => {
+            const _data = this.tableData;
+            const allSelected = _data.every((row) => row.selected);
+            const containsSelected = _data.some((row) => row.selected);
+            const onChange = (value) => {
+              _data.map((row) => {
+                row.selected = value;
+                return row;
+              });
+            };
+
+            return (
+              // <ElCheckbox
+              //   value={allSelected}
+              //   intermediate={containsSelected && !allSelected}
+              //   onChange={onChange}
+              // />
+              h(ElCheckbox, {
+                modelValue: allSelected,
+                indeterminate: containsSelected && !allSelected,
+                onChange,
+              })
+            );
+          },
           cellRenderer: (cellData) =>
             h(ElCheckbox, {
               modelValue: this.tableData[cellData.rowIndex].selected,
@@ -208,6 +237,7 @@ export default {
           key: "file_name",
           dataKey: "file_name",
           title: "file_name",
+          fixed: true,
           width: 260,
           cellRenderer: (cellData) => (
             <div class="file" onClick={() => this.fileClick(cellData)}>
@@ -219,6 +249,7 @@ export default {
           key: "",
           dataKey: "",
           title: "",
+          fixed: true,
           width: 360,
           cellRenderer: (cellData) => (
             <audio
@@ -229,46 +260,123 @@ export default {
             />
           ),
         },
-        { key: "remark", dataKey: "remark", title: "remark", width: 100 },
-      ],
-      listPreColumns: [
         {
-          width: 50,
-          cellRenderer: (cellData) =>
-            h(ElCheckbox, {
-              modelValue: this.listPre[cellData.rowIndex].selected,
-              "onUpdate:modelValue": () =>
-                (this.listPre[cellData.rowIndex].selected =
-                  !this.listPre[cellData.rowIndex].selected),
-            }),
-        },
-        {
-          key: "file_name",
-          dataKey: "file_name",
-          title: "file_name",
-          width: 260,
+          key: "character",
+          dataKey: "character",
+          title: "character",
+          width: 160,
           cellRenderer: (cellData) => (
-            <span onClick={() => this.fileClick(cellData)}>
-              {cellData.rowData.file_name}
-            </span>
+            <>
+              {this.editMode ? (
+                <el-input
+                  type="textarea"
+                  autosize
+                  v-model={cellData.rowData.character}
+                ></el-input>
+              ) : (
+                <div>{cellData.rowData.character}</div>
+              )}
+            </>
           ),
         },
         {
-          key: "",
-          dataKey: "",
-          title: "",
-          width: 360,
+          key: "ori",
+          dataKey: "ori",
+          title: "ori",
+          width: 200,
           cellRenderer: (cellData) => (
-            <audio
-              controls
-              autoplay
-              src={this.audioList[cellData.rowIndex]}
-              title={cellData.rowData.file_name + ".wav"}
-            />
+            <>
+              {this.editMode ? (
+                <el-input
+                  type="textarea"
+                  autosize
+                  v-model={cellData.rowData.ori}
+                ></el-input>
+              ) : (
+                <div>{cellData.rowData.ori}</div>
+              )}
+            </>
           ),
         },
-        { key: "remark", dataKey: "remark", title: "remark", width: 100 },
+        {
+          key: "chs",
+          dataKey: "chs",
+          title: "chs",
+          width: 200,
+          cellRenderer: (cellData) => (
+            <>
+              {this.editMode ? (
+                <el-input
+                  type="textarea"
+                  autosize
+                  v-model={cellData.rowData.chs}
+                ></el-input>
+              ) : (
+                <div>{cellData.rowData.chs}</div>
+              )}
+            </>
+          ),
+        },
+        {
+          key: "eng",
+          dataKey: "eng",
+          title: "eng",
+          width: 200,
+          cellRenderer: (cellData) => (
+            <>
+              {this.editMode ? (
+                <el-input
+                  type="textarea"
+                  autosize
+                  v-model={cellData.rowData.eng}
+                ></el-input>
+              ) : (
+                <div>{cellData.rowData.eng}</div>
+              )}
+            </>
+          ),
+        },
+        {
+          key: "other_language",
+          dataKey: "other_language",
+          title: "other_language",
+          width: 200,
+          cellRenderer: (cellData) => (
+            <>
+              {this.editMode ? (
+                <el-input
+                  type="textarea"
+                  autosize
+                  v-model={cellData.rowData.other_language}
+                ></el-input>
+              ) : (
+                <div>{cellData.rowData.other_language}</div>
+              )}
+            </>
+          ),
+        },
+        {
+          key: "remark",
+          dataKey: "remark",
+          title: "remark",
+          width: 200,
+          cellRenderer: (cellData) => (
+            <>
+              {this.editMode ? (
+                <el-input
+                  type="textarea"
+                  autosize
+                  v-model={cellData.rowData.remark}
+                ></el-input>
+              ) : (
+                <div>{cellData.rowData.remark}</div>
+              )}
+            </>
+          ),
+        },
       ],
+      tableColumns: [],
+      listPreColumns: [],
       tableData: [],
     };
   },
@@ -351,6 +459,14 @@ export default {
       _this.listPre = _this.tableData.filter((item) => {
         return item.selected == true;
       });
+
+      if (!_this.listPre.length) {
+        ElNotification({
+          title: "提示",
+          message: "无数据",
+        });
+        return;
+      }
       _this.confirmDrawer = true;
       return;
 
@@ -375,6 +491,10 @@ export default {
     },
     doUpdateDB() {
       let _this = this;
+
+      _this.listPre = _this.listPre.filter((item) => {
+        return item.selected == true;
+      });
 
       if (_this.category == "bgm") {
         commonApi.updateBgm(_this.listPre);
@@ -401,6 +521,15 @@ export default {
 
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];
+
+      _this.tableColumns = _.cloneDeep(_this.fullColumns);
+      _this.listPreColumns = _.cloneDeep(_this.fullColumns);
+      if (_this.category == "bgm") {
+        _this.tableColumns.splice(3, 5);
+      }
+      if (_this.category == "voice") {
+        _this.tableColumns.splice(3, 1);
+      }
     },
     async sectionChange(tab, event) {
       let _this = this;
@@ -624,11 +753,20 @@ export default {
 
       return wavObj;
     },
+
+    rowClassName(row) {
+      return;
+      return row.rowIndex % 2 === 0 ? {} : { background: "#f0f0f080" };
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+// .stripe {
+//   background: "#f0f0f080";
+// }
+
 .ml-10 {
   margin-left: 10px;
 }

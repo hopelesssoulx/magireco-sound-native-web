@@ -121,6 +121,7 @@
       ref="list"
       stripe
       height="680"
+      :row-style="rowStyle"
     >
       <el-table-column type="selection" fixed />
       <el-table-column label="文件名" fixed width="260">
@@ -150,20 +151,15 @@
       >
         <template #default="scope">
           <el-input
-            disabled
-            type="textarea"
-            autosize
-            v-if="!editMode"
-            v-model="conversationData[scope.$index].character"
-          >
-          </el-input>
-          <el-input
-            type="textarea"
-            autosize
             v-if="editMode"
+            type="textarea"
+            autosize
             v-model="conversationData[scope.$index].character"
           >
           </el-input>
+          <div v-if="!editMode">
+            {{ conversationData[scope.$index].character }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -173,20 +169,15 @@
       >
         <template #default="scope">
           <el-input
-            disabled
-            type="textarea"
-            autosize
-            v-if="!editMode"
-            v-model="conversationData[scope.$index].ori"
-          >
-          </el-input>
-          <el-input
-            type="textarea"
-            autosize
             v-if="editMode"
+            type="textarea"
+            autosize
             v-model="conversationData[scope.$index].ori"
           >
           </el-input>
+          <div v-if="!editMode">
+            {{ conversationData[scope.$index].ori }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -196,20 +187,15 @@
       >
         <template #default="scope">
           <el-input
-            disabled
-            type="textarea"
-            autosize
-            v-if="!editMode"
-            v-model="conversationData[scope.$index].chs"
-          >
-          </el-input>
-          <el-input
-            type="textarea"
-            autosize
             v-if="editMode"
+            type="textarea"
+            autosize
             v-model="conversationData[scope.$index].chs"
           >
           </el-input>
+          <div v-if="!editMode">
+            {{ conversationData[scope.$index].chs }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -219,20 +205,15 @@
       >
         <template #default="scope">
           <el-input
-            disabled
-            type="textarea"
-            autosize
-            v-if="!editMode"
-            v-model="conversationData[scope.$index].eng"
-          >
-          </el-input>
-          <el-input
-            type="textarea"
-            autosize
             v-if="editMode"
+            type="textarea"
+            autosize
             v-model="conversationData[scope.$index].eng"
           >
           </el-input>
+          <div v-if="!editMode">
+            {{ conversationData[scope.$index].eng }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -242,39 +223,29 @@
       >
         <template #default="scope">
           <el-input
-            disabled
-            type="textarea"
-            autosize
-            v-if="!editMode"
-            v-model="conversationData[scope.$index].other_language"
-          >
-          </el-input>
-          <el-input
-            type="textarea"
-            autosize
             v-if="editMode"
+            type="textarea"
+            autosize
             v-model="conversationData[scope.$index].other_language"
           >
           </el-input>
+          <div v-if="!editMode">
+            {{ conversationData[scope.$index].other_language }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column prop="" label="备注">
         <template #default="scope">
           <el-input
-            disabled
-            type="textarea"
-            autosize
-            v-if="!editMode"
-            v-model="conversationData[scope.$index].remark"
-          >
-          </el-input>
-          <el-input
-            type="textarea"
-            autosize
             v-if="editMode"
+            type="textarea"
+            autosize
             v-model="conversationData[scope.$index].remark"
           >
           </el-input>
+          <div v-if="!editMode">
+            {{ conversationData[scope.$index].remark }}
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -287,6 +258,7 @@
           :data="listPre"
           ref="listPre"
           stripe
+          :row-style="rowStyle"
           height="740"
         >
           <el-table-column label="文件名" fixed width="260">
@@ -316,20 +288,15 @@
           >
             <template #default="scope">
               <el-input
-                disabled
-                type="textarea"
-                autosize
-                v-if="!editMode"
-                v-model="conversationData[scope.$index].character"
-              >
-              </el-input>
-              <el-input
-                type="textarea"
-                autosize
                 v-if="editMode"
+                type="textarea"
+                autosize
                 v-model="conversationData[scope.$index].character"
               >
               </el-input>
+              <div v-if="!editMode">
+                {{ conversationData[scope.$index].character }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column
@@ -339,20 +306,15 @@
           >
             <template #default="scope">
               <el-input
-                disabled
-                type="textarea"
-                autosize
-                v-if="!editMode"
-                v-model="conversationData[scope.$index].ori"
-              >
-              </el-input>
-              <el-input
-                type="textarea"
-                autosize
                 v-if="editMode"
+                type="textarea"
+                autosize
                 v-model="conversationData[scope.$index].ori"
               >
               </el-input>
+              <div v-if="!editMode">
+                {{ conversationData[scope.$index].ori }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column
@@ -362,20 +324,15 @@
           >
             <template #default="scope">
               <el-input
-                disabled
-                type="textarea"
-                autosize
-                v-if="!editMode"
-                v-model="conversationData[scope.$index].chs"
-              >
-              </el-input>
-              <el-input
-                type="textarea"
-                autosize
                 v-if="editMode"
+                type="textarea"
+                autosize
                 v-model="conversationData[scope.$index].chs"
               >
               </el-input>
+              <div v-if="!editMode">
+                {{ conversationData[scope.$index].chs }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column
@@ -385,20 +342,15 @@
           >
             <template #default="scope">
               <el-input
-                disabled
-                type="textarea"
-                autosize
-                v-if="!editMode"
-                v-model="conversationData[scope.$index].eng"
-              >
-              </el-input>
-              <el-input
-                type="textarea"
-                autosize
                 v-if="editMode"
+                type="textarea"
+                autosize
                 v-model="conversationData[scope.$index].eng"
               >
               </el-input>
+              <div v-if="!editMode">
+                {{ conversationData[scope.$index].eng }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column
@@ -408,39 +360,29 @@
           >
             <template #default="scope">
               <el-input
-                disabled
-                type="textarea"
-                autosize
-                v-if="!editMode"
-                v-model="conversationData[scope.$index].other_language"
-              >
-              </el-input>
-              <el-input
-                type="textarea"
-                autosize
                 v-if="editMode"
+                type="textarea"
+                autosize
                 v-model="conversationData[scope.$index].other_language"
               >
               </el-input>
+              <div v-if="!editMode">
+                {{ conversationData[scope.$index].other_language }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column prop="" label="备注">
             <template #default="scope">
               <el-input
-                disabled
-                type="textarea"
-                autosize
-                v-if="!editMode"
-                v-model="conversationData[scope.$index].remark"
-              >
-              </el-input>
-              <el-input
-                type="textarea"
-                autosize
                 v-if="editMode"
+                type="textarea"
+                autosize
                 v-model="conversationData[scope.$index].remark"
               >
               </el-input>
+              <div v-if="!editMode">
+                {{ conversationData[scope.$index].remark }}
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -802,6 +744,11 @@ export default {
       _this.audioList[_this.currentClickIdx] = tmpUrl;
 
       return wavObj;
+    },
+
+    rowStyle(row) {
+      return;
+      return row.rowIndex % 2 === 0 ? {} : { background: "#f0f0f080" };
     },
   },
 };
