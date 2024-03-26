@@ -632,7 +632,7 @@ export default {
       });
       if (section > 104200) {
         // _this.conversationData = _this.sectionData.filter((item) => {
-        _this.tableData = _this.conversationData.filter((item) => {
+        _this.tableData = _this.tableData.filter((item) => {
           return item.file_name.split("-")[0] == _this.Scene0Section;
         });
       }
