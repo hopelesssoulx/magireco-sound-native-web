@@ -183,56 +183,84 @@ export default {
       hcaLoopCount: 0,
       hcaVolume: 100,
 
-      fullColumns: [
-        {
-          // key: "selection",
-          fixed: true,
-          width: 40,
-          // cellRenderer: (cellData) => {
-          //   const onChange = (val) => (cellData.rowData.checked = val);
-          //   return (
-          //     <SelectionCell
-          //       value={cellData.rowData.checked}
-          //       onChange={onChange}
-          //     />
-          //   );
-          // },
-          headerCellRenderer: () => {
-            const _data = this.tableData;
-            const allSelected = _data.every((row) => row.selected);
-            const containsSelected = _data.some((row) => row.selected);
-            const onChange = (value) => {
-              _data.map((row) => {
-                row.selected = value;
-                return row;
-              });
-            };
+      tableDataSelectColumn: {
+        // key: "selection",
+        fixed: true,
+        width: 40,
+        // cellRenderer: (cellData) => {
+        //   const onChange = (val) => (cellData.rowData.checked = val);
+        //   return (
+        //     <SelectionCell
+        //       value={cellData.rowData.checked}
+        //       onChange={onChange}
+        //     />
+        //   );
+        // },
+        headerCellRenderer: () => {
+          const _data = this.tableData;
+          const allSelected = _data.every((row) => row.selected);
+          const containsSelected = _data.some((row) => row.selected);
+          const onChange = (value) => {
+            _data.map((row) => {
+              row.selected = value;
+              return row;
+            });
+          };
 
-            return (
-              // <ElCheckbox
-              //   value={allSelected}
-              //   intermediate={containsSelected && !allSelected}
-              //   onChange={onChange}
-              // />
-              h(ElCheckbox, {
-                modelValue: allSelected,
-                indeterminate: containsSelected && !allSelected,
-                onChange,
-              })
-            );
-          },
-          cellRenderer: (cellData) =>
+          return (
+            // <ElCheckbox
+            //   value={allSelected}
+            //   intermediate={containsSelected && !allSelected}
+            //   onChange={onChange}
+            // />
             h(ElCheckbox, {
-              modelValue: this.tableData[cellData.rowIndex].selected,
-              "onUpdate:modelValue": () =>
-                (this.tableData[cellData.rowIndex].selected =
-                  !this.tableData[cellData.rowIndex].selected),
-              onChange: (val) => {
-                // this.tableData[cellData.rowIndex].selected = this.tableData[cellData.rowIndex].selected;
-                // console.log(JSON.parse(JSON.stringify(this.tableData)));
-              },
-            }),
+              modelValue: allSelected,
+              indeterminate: containsSelected && !allSelected,
+              onChange,
+            })
+          );
         },
+        cellRenderer: (cellData) =>
+          h(ElCheckbox, {
+            modelValue: this.tableData[cellData.rowIndex].selected,
+            "onUpdate:modelValue": () =>
+              (this.tableData[cellData.rowIndex].selected =
+                !this.tableData[cellData.rowIndex].selected),
+            onChange: (val) => {
+              // this.tableData[cellData.rowIndex].selected = this.tableData[cellData.rowIndex].selected;
+              // console.log(JSON.parse(JSON.stringify(this.tableData)));
+            },
+          }),
+      },
+      listPreSelectColumn: {
+        fixed: true,
+        width: 40,
+        headerCellRenderer: () => {
+          const _data = this.listPre;
+          const allSelected = _data.every((row) => row.selected);
+          const containsSelected = _data.some((row) => row.selected);
+          const onChange = (value) => {
+            _data.map((row) => {
+              row.selected = value;
+              return row;
+            });
+          };
+
+          return h(ElCheckbox, {
+            modelValue: allSelected,
+            indeterminate: containsSelected && !allSelected,
+            onChange,
+          });
+        },
+        cellRenderer: (cellData) =>
+          h(ElCheckbox, {
+            modelValue: this.listPre[cellData.rowIndex].selected,
+            "onUpdate:modelValue": () =>
+              (this.listPre[cellData.rowIndex].selected =
+                !this.listPre[cellData.rowIndex].selected),
+          }),
+      },
+      fullColumns: [
         {
           key: "file_name",
           dataKey: "file_name",
@@ -456,10 +484,10 @@ export default {
     updateDB() {
       let _this = this;
 
-      _this.listPre = _this.tableData.filter((item) => {
+      _this.listPre = _.cloneDeep(_this.tableData);
+      _this.listPre = _this.listPre.filter((item) => {
         return item.selected == true;
       });
-
       if (!_this.listPre.length) {
         ElNotification({
           title: "提示",
@@ -467,6 +495,10 @@ export default {
         });
         return;
       }
+
+      _this.listPre.forEach((item) => {
+        item.selected = false;
+      });
       _this.confirmDrawer = true;
       return;
 
@@ -492,17 +524,26 @@ export default {
     doUpdateDB() {
       let _this = this;
 
-      _this.listPre = _this.listPre.filter((item) => {
+      let listSend = _this.listPre.filter((item) => {
         return item.selected == true;
       });
 
+      if (!listSend.length) {
+        ElNotification({
+          title: "提示",
+          message: "无数据",
+        });
+        return;
+      }
+
       if (_this.category == "bgm") {
-        commonApi.updateBgm(_this.listPre);
+        commonApi.updateBgm(listSend);
       }
       if (_this.category == "fullvoice") {
-        commonApi.updateFullvoice(_this.listPre);
+        commonApi.updateFullvoice(listSend);
       }
       if (_this.category == "voice") {
+        commonApi.updateVoice(listSend);
       }
       _this.confirmDrawer = false;
       _this.editMode = false;
@@ -522,13 +563,27 @@ export default {
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];
 
-      _this.tableColumns = _.cloneDeep(_this.fullColumns);
-      _this.listPreColumns = _.cloneDeep(_this.fullColumns);
+      let t = _.cloneDeep(_this.fullColumns);
+
+      t.unshift(_this.tableDataSelectColumn);
+      _this.tableColumns = _.cloneDeep(t);
+
+      t.shift();
+      t.unshift(_this.listPreSelectColumn);
+      _this.listPreColumns = _.cloneDeep(t);
+      // _this.tableColumns = _.cloneDeep(
+      //   _this.fullColumns.unshift(_this.tableDataSelectColumn)
+      // );
+      // _this.listPreColumns = _.cloneDeep(
+      //   _this.fullColumns.unshift(_this.listPreSelectColumn)
+      // );
       if (_this.category == "bgm") {
         _this.tableColumns.splice(3, 5);
+        _this.listPreColumns.splice(3, 5);
       }
       if (_this.category == "voice") {
         _this.tableColumns.splice(3, 1);
+        _this.listPreColumns.splice(3, 1);
       }
     },
     async sectionChange(tab, event) {
