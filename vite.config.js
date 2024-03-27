@@ -32,7 +32,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 16167,
+    port: 16168,
     host: "0.0.0.0",
   },
   resolve: {
