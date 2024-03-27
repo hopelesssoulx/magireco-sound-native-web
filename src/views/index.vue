@@ -31,7 +31,7 @@
           @click="editMode = false"
           >disable edit mode</el-button
         >
-        <el-button type="primary" v-if="editMode" @click="updateDB()"
+        <el-button type="danger" v-if="editMode" @click="updateDB()"
           >update</el-button
         >
       </div>
@@ -256,11 +256,13 @@
         <el-table
           v-if="listPre.length"
           :data="listPre"
+          @row-click="rowClick"
           ref="listPre"
           stripe
           :row-style="rowStyle"
           height="740"
         >
+          <el-table-column type="selection" fixed />
           <el-table-column label="文件名" fixed width="260">
             <template #default="scope">
               <div @click="fileClick(scope)" class="file">
@@ -291,11 +293,11 @@
                 v-if="editMode"
                 type="textarea"
                 autosize
-                v-model="conversationData[scope.$index].character"
+                v-model="listPre[scope.$index].character"
               >
               </el-input>
               <div v-if="!editMode">
-                {{ conversationData[scope.$index].character }}
+                {{ listPre[scope.$index].character }}
               </div>
             </template>
           </el-table-column>
@@ -309,11 +311,11 @@
                 v-if="editMode"
                 type="textarea"
                 autosize
-                v-model="conversationData[scope.$index].ori"
+                v-model="listPre[scope.$index].ori"
               >
               </el-input>
               <div v-if="!editMode">
-                {{ conversationData[scope.$index].ori }}
+                {{ listPre[scope.$index].ori }}
               </div>
             </template>
           </el-table-column>
@@ -327,11 +329,11 @@
                 v-if="editMode"
                 type="textarea"
                 autosize
-                v-model="conversationData[scope.$index].chs"
+                v-model="listPre[scope.$index].chs"
               >
               </el-input>
               <div v-if="!editMode">
-                {{ conversationData[scope.$index].chs }}
+                {{ listPre[scope.$index].chs }}
               </div>
             </template>
           </el-table-column>
@@ -345,11 +347,11 @@
                 v-if="editMode"
                 type="textarea"
                 autosize
-                v-model="conversationData[scope.$index].eng"
+                v-model="listPre[scope.$index].eng"
               >
               </el-input>
               <div v-if="!editMode">
-                {{ conversationData[scope.$index].eng }}
+                {{ listPre[scope.$index].eng }}
               </div>
             </template>
           </el-table-column>
@@ -363,11 +365,11 @@
                 v-if="editMode"
                 type="textarea"
                 autosize
-                v-model="conversationData[scope.$index].other_language"
+                v-model="listPre[scope.$index].other_language"
               >
               </el-input>
               <div v-if="!editMode">
-                {{ conversationData[scope.$index].other_language }}
+                {{ listPre[scope.$index].other_language }}
               </div>
             </template>
           </el-table-column>
@@ -377,11 +379,11 @@
                 v-if="editMode"
                 type="textarea"
                 autosize
-                v-model="conversationData[scope.$index].remark"
+                v-model="listPre[scope.$index].remark"
               >
               </el-input>
               <div v-if="!editMode">
-                {{ conversationData[scope.$index].remark }}
+                {{ listPre[scope.$index].remark }}
               </div>
             </template>
           </el-table-column>
@@ -437,7 +439,13 @@ export default {
   methods: {
     rowClick(row, column, event) {
       let _this = this;
-      _this.$refs["list"].toggleRowSelection(row, undefined);
+
+      if (_this.$refs["list"]) {
+        _this.$refs["list"].toggleRowSelection(row, undefined);
+      }
+      if (_this.$refs["listPre"]) {
+        _this.$refs["listPre"].toggleRowSelection(row, undefined);
+      }
     },
     selectionChange(list) {
       let _this = this;
@@ -525,13 +533,23 @@ export default {
     doUpdateDB() {
       let _this = this;
 
+      let listSend = _this.$refs["listPre"].getSelectionRows();
+      if (!listSend.length) {
+        ElNotification({
+          title: "提示",
+          message: "无数据",
+        });
+        return;
+      }
+
       if (_this.category == "bgm") {
-        commonApi.updateBgm(_this.listPre);
+        commonApi.updateBgm(listSend);
       }
       if (_this.category == "fullvoice") {
-        commonApi.updateFullvoice(_this.listPre);
+        commonApi.updateFullvoice(listSend);
       }
       if (_this.category == "voice") {
+        commonApi.updateVoice(listSend);
       }
       _this.confirmDrawer = false;
       _this.editMode = false;
