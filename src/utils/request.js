@@ -2,7 +2,7 @@ import axios from 'axios'
 
 
 axios.defaults.headers["Content-Type"] = "application/json;charset=utf-8"
-const baseURL = 'http://127.0.0.1:16168'
+const baseURL = 'http://127.0.0.1:16167'
 
 
 export const request = axios.create({

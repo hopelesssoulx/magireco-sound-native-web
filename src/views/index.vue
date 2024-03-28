@@ -420,7 +420,7 @@ export default {
       sectionDesc: "",
       selectionCount: 0,
 
-      editMode: true,
+      editMode: false,
       confirmDrawer: false,
       listPre: [],
 
