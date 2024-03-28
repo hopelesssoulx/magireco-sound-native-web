@@ -119,9 +119,8 @@
       @selection-change="selectionChange"
       @row-click="rowClick"
       ref="list"
-      stripe
       height="680"
-      :row-style="rowStyle"
+      :row-class-name="tableRowClassName"
     >
       <el-table-column type="selection" fixed />
       <el-table-column label="文件名" fixed width="260">
@@ -258,9 +257,8 @@
           :data="listPre"
           @row-click="rowClick"
           ref="listPre"
-          stripe
-          :row-style="rowStyle"
           height="740"
+          :row-class-name="tableRowClassName"
         >
           <el-table-column type="selection" fixed />
           <el-table-column label="文件名" fixed width="260">
@@ -764,15 +762,21 @@ export default {
       return wavObj;
     },
 
-    rowStyle(row) {
-      return;
-      return row.rowIndex % 2 === 0 ? {} : { background: "#f0f0f080" };
+    tableRowClassName(row) {
+      if (row.rowIndex % 2 === 1) {
+        return "stripe";
+      }
+      return "";
     },
   },
 };
 </script>
 
-<style scoped>
+<style>
+.el-table .stripe {
+  --el-table-tr-bg-color: #fafafa;
+}
+
 .ml-10 {
   margin-left: 10px;
 }
