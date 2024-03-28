@@ -117,7 +117,7 @@
       :width="1800"
       :height="680"
       :estimated-row-height="120"
-      :row-class-name="rowClassName"
+      :row-class="rowClass"
       fixed
       v-if="tableData.length"
       :data="tableData"
@@ -131,9 +131,9 @@
           :width="1660"
           :height="680"
           :estimated-row-height="120"
-          :row-class-name="rowClassName"
+          :row-class="rowClass"
           fixed
-          v-if="tableData.length"
+          v-if="listPre.length"
           :data="listPre"
           :columns="listPreColumns"
         />
@@ -809,18 +809,20 @@ export default {
       return wavObj;
     },
 
-    rowClassName(row) {
-      return;
-      return row.rowIndex % 2 === 0 ? {} : { background: "#f0f0f080" };
+    rowClass(row) {
+      if (row.rowIndex % 2 === 1) {
+        return "stripe";
+      }
+      return "";
     },
   },
 };
 </script>
 
-<style lang="scss" scoped>
-// .stripe {
-//   background: "#f0f0f080";
-// }
+<style>
+.stripe {
+  background: #fafafa;
+}
 
 .ml-10 {
   margin-left: 10px;

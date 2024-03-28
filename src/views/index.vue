@@ -772,7 +772,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .ml-10 {
   margin-left: 10px;
 }
