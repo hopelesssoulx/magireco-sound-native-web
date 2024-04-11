@@ -9,7 +9,7 @@ import { RouterView } from "vue-router";
 </template>
 
 <style scoped>
-.app{
+.app {
   margin: 30px;
 }
 </style>
