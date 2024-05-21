@@ -396,6 +396,7 @@
 
 <script>
 import * as hcaStrUtil from "../utils/hcaStr";
+import * as config from "../utils/config";
 import * as commonApi from "../api/common.js";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
@@ -723,7 +724,7 @@ export default {
     },
     async getFile(path) {
       let _this = this;
-      let res = await fetch("http://127.0.0.1:16167/getFile/" + path);
+      let res = await fetch(config.baseUrl + "/getFile/" + path);
       _this.decryptAndDecode(res);
     },
     async decryptAndDecode(hca) {
