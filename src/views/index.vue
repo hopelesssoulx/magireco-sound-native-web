@@ -20,6 +20,11 @@
       </div>
       <div class="ml-10">
         <el-button
+          type="primary"
+          @click="$router.push({name: 'video'})"
+          >video</el-button
+        >
+        <el-button
           type="danger"
           v-if="editMode == false"
           @click="editMode = true"
@@ -273,7 +278,6 @@
               <div>
                 <audio
                   controls
-                  autoplay
                   :src="audioList[scope.$index]"
                   :title="scope.row.file_name + '.wav'"
                 ></audio>
@@ -395,6 +399,7 @@
 </template>
 
 <script>
+// import * as hcaUtil from "../utils/hca";
 import * as hcaStrUtil from "../utils/hcaStr";
 import * as config from "../utils/config";
 import * as commonApi from "../api/common.js";

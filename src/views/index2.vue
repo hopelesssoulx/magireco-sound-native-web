@@ -173,7 +173,7 @@ export default {
       sectionDesc: "",
       selectionCount: 0,
 
-      editMode: true,
+      editMode: false,
       confirmDrawer: false,
       listPre: [],
 
@@ -771,7 +771,7 @@ export default {
     },
     async getFile(path) {
       let _this = this;
-      let res = await fetch(config.baseURI + "/getFile/" + path);
+      let res = await fetch(config.baseUrl + "/getFile/" + path);
       _this.decryptAndDecode(res);
     },
     async decryptAndDecode(hca) {
