@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: "/",
@@ -19,6 +19,12 @@ const router = createRouter({
       name: "index2",
       meta: { title: "index2" },
       component: () => import("../views/index2.vue"),
+    },
+    {
+      path: "/video",
+      name: "video",
+      meta: { title: "video" },
+      component: () => import("../views/video.vue"),
     },
   ],
 });
