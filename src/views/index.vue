@@ -1,44 +1,52 @@
 <template>
   <div class="index">
-    <div class="flex-left">
-      <div>
-        <span>key1=</span><input type="text" v-model="hcaKey1" />
-        <span class="ml-10">key2=</span><input type="text" v-model="hcaKey2" />
-        <br />
-        <span>decoding mode: </span
-        ><input type="number" step="8" min="0" max="32" v-model="hcaMode" />
-        <span class="ml-10">loop count: </span
-        ><input
-          type="number"
-          step="1"
-          min="0"
-          max="99"
-          v-model="hcaLoopCount"
-        />
-        <span class="ml-10">volume: </span
-        ><input type="number" step="1" min="0" max="100" v-model="hcaVolume" />
+    <div class="flex-between">
+      <div class="flex-left">
+        <div>
+          <span>key1=</span><input type="text" v-model="hcaKey1" />
+          <span class="ml-10">key2=</span>
+          <input type="text" v-model="hcaKey2" />
+          <br />
+          <span>decoding mode: </span>
+          <input type="number" step="8" min="0" max="32" v-model="hcaMode" />
+          <span class="ml-10">loop count: </span>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            max="99"
+            v-model="hcaLoopCount"
+          />
+          <span class="ml-10">volume: </span>
+          <input type="number" step="1" min="0" max="100" v-model="hcaVolume" />
+        </div>
+        <div class="ml-10">
+          <el-button
+            type="danger"
+            v-if="editMode == false"
+            @click="editMode = true"
+          >
+            enable edit mode
+          </el-button>
+          <el-button
+            type="warning"
+            v-if="editMode == true"
+            @click="editMode = false"
+          >
+            disable edit mode
+          </el-button>
+          <el-button type="danger" v-if="editMode" @click="updateDB()">
+            update
+          </el-button>
+        </div>
       </div>
-      <div class="ml-10">
-        <el-button
-          type="primary"
-          @click="$router.push({name: 'video'})"
-          >video</el-button
-        >
-        <el-button
-          type="danger"
-          v-if="editMode == false"
-          @click="editMode = true"
-          >enable edit mode</el-button
-        >
-        <el-button
-          type="warning"
-          v-if="editMode == true"
-          @click="editMode = false"
-          >disable edit mode</el-button
-        >
-        <el-button type="danger" v-if="editMode" @click="updateDB()"
-          >update</el-button
-        >
+      <div>
+        <el-button type="primary" @click="$router.push({ name: 'index2' })">
+          sound native 2
+        </el-button>
+        <el-button type="primary" @click="$router.push({ name: 'movie' })">
+          movie
+        </el-button>
       </div>
     </div>
 

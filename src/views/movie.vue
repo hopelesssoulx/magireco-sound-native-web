@@ -1,5 +1,17 @@
 <template>
-  <div>
+  <div class="movie">
+    <div class="flex-between mb-30">
+      <div class="flex-left"></div>
+      <div>
+        <el-button type="primary" @click="$router.push({ name: 'index' })">
+          sound native 1
+        </el-button>
+        <el-button type="primary" @click="$router.push({ name: 'index2' })">
+          sound native 1
+        </el-button>
+      </div>
+    </div>
+    <div class="loading" v-show="loading">loading.</div>
     <video
       :src="videoUrl"
       style="background: black; max-width: 100%"
@@ -15,6 +27,7 @@
 export default {
   data() {
     return {
+      loading: true,
       videoUrl: "",
 
       crid: undefined,
@@ -37,9 +50,12 @@ export default {
         "movie_1001_1",
         "movie_1401",
         "movie_3032",
+        "op_movie",
+        "op_movie2",
+        "op_movie3",
       ];
-      let fileName = "http://localhost:16167/getFile/" + arr[2] + ".usm";
-      this.fn(fileName);
+      let fileName = "http://localhost:16167/getFile/" + arr[0] + ".usm";
+      // this.fn(fileName);
 
       setTimeout(() => {
         // this.fn("movie_1001_1.usm")
@@ -49,6 +65,7 @@ export default {
   methods: {
     fn(fileName) {
       let _this = this;
+      _this.loading = true;
       return __awaiter(void 0, void 0, void 0, function () {
         var res, ab, stream, video;
         return __generator(this, function (_a) {
@@ -69,6 +86,7 @@ export default {
               stream = _a.sent();
               video = document.getElementsByTagName("video")[0];
               video.src = URL.createObjectURL(new Blob([stream]));
+              _this.loading = false;
               return [2 /*return*/];
           }
         });
@@ -132,3 +150,63 @@ export default {
   },
 };
 </script>
+
+<style>
+.el-table .stripe {
+  --el-table-tr-bg-color: #fafafa;
+}
+
+.ml-10 {
+  margin-left: 10px;
+}
+.mb-30 {
+  margin-bottom: 30px;
+}
+.flex-left {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file {
+  cursor: pointer;
+}
+.file::after {
+  display: block;
+  content: "";
+  border-bottom: 2px solid #808080;
+  width: 0;
+  transition: width 0.3s ease-in-out;
+}
+.file:hover::after {
+  width: 100%;
+}
+
+.loading:after {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+  -webkit-animation: ellipsis steps(3, end) 3000ms infinite;
+  animation: ellipsis steps(3, end) 3000ms infinite;
+  content: "\2026";
+  /* ascii code for the ellipsis character */
+  width: 0px;
+}
+
+@keyframes ellipsis {
+  to {
+    width: 11px;
+  }
+}
+
+@-webkit-keyframes ellipsis {
+  to {
+    width: 11px;
+  }
+}
+</style>

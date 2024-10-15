@@ -11,20 +11,20 @@ const router = createRouter({
     {
       path: "/index",
       name: "index",
-      meta: { title: "index" },
+      meta: { title: "" },
       component: () => import("../views/index.vue"),
     },
     {
       path: "/index2",
       name: "index2",
-      meta: { title: "index2" },
+      meta: { title: "" },
       component: () => import("../views/index2.vue"),
     },
     {
-      path: "/video",
-      name: "video",
-      meta: { title: "video" },
-      component: () => import("../views/video.vue"),
+      path: "/movie",
+      name: "movie",
+      meta: { title: "" },
+      component: () => import("../views/movie.vue"),
     },
   ],
 });
