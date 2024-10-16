@@ -7,62 +7,159 @@
           sound native 1
         </el-button>
         <el-button type="primary" @click="$router.push({ name: 'index2' })">
-          sound native 1
+          sound native 2
         </el-button>
       </div>
     </div>
-    <div class="loading" v-show="loading">loading.</div>
-    <video
-      :src="videoUrl"
-      style="background: black; max-width: 100%"
-      controls
-      autoplay
-      muted
-    ></video>
+
+    <el-tabs @tab-click="catrgoryChange">
+      <el-tab-pane
+        v-for="(category, item, idx) in movie"
+        :label="item"
+      ></el-tab-pane>
+    </el-tabs>
+
+    <el-select
+      v-if="categoryData != null && (category == 'char' || category == 'mini')"
+      v-model="section"
+      class="mb-30"
+      placeholder="Select"
+      size="large"
+      style="width: 240px"
+      @change="sectionChange"
+    >
+      <el-option v-for="(category, item, idx) in categoryData" :value="item" />
+    </el-select>
+
+    <el-select
+      v-if="otherData != null && category == 'other'"
+      v-model="section"
+      class="mb-30"
+      placeholder="Select"
+      size="large"
+      style="width: 240px"
+      @change="movieFileChange"
+    >
+      <el-option v-for="(item, idx) in otherData" :value="item.file_name" />
+    </el-select>
+
+    <el-select
+      v-if="characterData != null"
+      v-model="movieFileName"
+      class="ml-10 mb-30"
+      placeholder="Select"
+      size="large"
+      style="width: 240px"
+      @change="movieFileChange"
+    >
+      <el-option v-for="(item, idx) in characterData" :value="item.file_name" />
+    </el-select>
+
+    <div>
+      <div class="loading" v-show="loading">loading.</div>
+      <video
+        :src="videoUrl"
+        style="background: black; max-width: 300px"
+        controls
+        autoplay
+        muted
+      ></video>
+    </div>
   </div>
 </template>
 
 <script>
+import _ from "lodash";
 // import { createFFmpeg } from "@ffmpeg/ffmpeg";
+import * as config from "../utils/config";
+import * as commonApi from "../api/common.js";
 export default {
   data() {
     return {
-      loading: true,
+      movie: {},
+      categoryData: null, // [], {}
+      section: null,
+      characterData: null,
+      otherData: null,
+      movieFileName: "",
+
+      loading: false,
       videoUrl: "",
 
       crid: undefined,
       worker: undefined,
     };
   },
-  created() {
-    // console.log(abc);
-    // console.log(JSON.parse(JSON.stringify(abc)));
-    // console.log(this.crid);
-    // console.log(this.worker);
+  async created() {
+    this.getMovie();
 
     this.crid = new CRID();
+
     // this.worker = createFFmpeg({ log: true });
     this.worker = FFmpeg.createFFmpeg({ log: true });
-    this.worker.load().then(() => {
-      let arr = [
-        "103305_epilogue",
-        "movie_1001",
-        "movie_1001_1",
-        "movie_1401",
-        "movie_3032",
-        "op_movie",
-        "op_movie2",
-        "op_movie3",
-      ];
-      let fileName = "http://localhost:16167/getFile/" + arr[0] + ".usm";
-      // this.fn(fileName);
-
-      setTimeout(() => {
-        // this.fn("movie_1001_1.usm")
-      }, 8000);
-    });
+    await this.worker.load();
   },
   methods: {
+    catrgoryChange(tab, event) {
+      let _this = this;
+      // _this.section = "";
+      // _this.sectionDesc = "";
+      // _this.conversationIdxCount = [];
+      // _this.conversationData = [];
+      // _this.audioList = [];
+      // _this.listPre = [];
+      // _this.selectionCount = 0;
+
+      _this.section = null;
+      _this.characterData = null;
+      _this.movieFileName = "";
+
+      _this.category = tab.props.label;
+      if (_this.category == "char") {
+        _this.categoryData = _this.movie[_this.category];
+      }
+      if (_this.category == "other") {
+        _this.otherData = _this.movie[_this.category];
+      }
+      if (_this.category == "mini") {
+        _this.categoryData = _this.movie[_this.category];
+      }
+    },
+    sectionChange(tab, event) {
+      let _this = this;
+      // _this.conversationIdxCount = [];
+      // _this.conversationData = [];
+      // _this.audioList = [];
+      // _this.listPre = [];
+      // _this.selectionCount = 0;
+
+      // _this.Scene0Section = "";
+      // _this.scene0IdxCount = null;
+
+      _this.movieFileName = "";
+
+      _this.section = tab;
+      if (_this.category == "char") {
+        _this.characterData = _this.movie[_this.category][_this.section];
+      }
+      if (_this.category == "other") {
+      }
+      if (_this.category == "mini") {
+        _this.characterData = _this.movie[_this.category][_this.section];
+      }
+    },
+    async movieFileChange(tab, event) {
+      let _this = this;
+      _this.fn(config.baseUrl + "/getFile/movie/" + _this.category + "/" + tab);
+    },
+
+    getMovie() {
+      let _this = this;
+      commonApi.getMovie().then((res) => {
+        _this.movie = res.data;
+      });
+    },
+
     fn(fileName) {
       let _this = this;
       _this.loading = true;
@@ -84,8 +181,9 @@ export default {
               return [4 /*yield*/, _this.mux(_this.crid)];
             case 4:
               stream = _a.sent();
-              video = document.getElementsByTagName("video")[0];
-              video.src = URL.createObjectURL(new Blob([stream]));
+              // video = document.getElementsByTagName("video")[0];
+              // video.src = URL.createObjectURL(new Blob([stream]));
+              _this.videoUrl = URL.createObjectURL(new Blob([stream]));
               _this.loading = false;
               return [2 /*return*/];
           }

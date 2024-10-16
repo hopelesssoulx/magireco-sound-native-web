@@ -737,7 +737,7 @@ export default {
     },
     async getFile(path) {
       let _this = this;
-      let res = await fetch(config.baseUrl + "/getFile/" + path);
+      let res = await fetch(config.baseUrl + "/getFile/sound_native/" + path);
       _this.decryptAndDecode(res);
     },
     async decryptAndDecode(hca) {
