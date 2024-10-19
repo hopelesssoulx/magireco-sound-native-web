@@ -21,5 +21,10 @@ request.interceptors.response.use(
     },
     (err) => {
         console.log(err);
+        ElNotification({
+            title: "error",
+            message: err.message,
+            type: 'error',
+          });
     }
 )

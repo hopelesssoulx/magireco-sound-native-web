@@ -35,8 +35,9 @@ export default defineConfig({
     port: 16168,
     host: "0.0.0.0",
     headers: {
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin',
+      // "Access-Control-Allow-Origin": "*",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
     },
   },
   resolve: {

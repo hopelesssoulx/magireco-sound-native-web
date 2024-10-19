@@ -1,7 +1,21 @@
 <template>
   <div class="movie">
-    <div class="flex-between mb-30">
-      <div class="flex-left"></div>
+    <div class="flex-between">
+      <div class="flex-left">
+        <div>
+          <span>third party source url = </span>
+          <input
+            style="width: 260px"
+            type="text"
+            v-model="tpsUrl"
+            placeholder="../resource/"
+          />
+          <br />
+
+          <span>width = </span>
+          <input type="text" v-model="width" placeholder="px / %" />
+        </div>
+      </div>
       <div>
         <el-button type="primary" @click="$router.push({ name: 'index' })">
           sound native 1
@@ -59,7 +73,8 @@
       <div class="loading" v-show="loading">loading.</div>
       <video
         :src="videoUrl"
-        style="background: black; max-width: 300px"
+        style="background: black"
+        :style="{ width: width }"
         controls
         autoplay
         muted
@@ -85,6 +100,10 @@ export default {
 
       loading: false,
       videoUrl: "",
+
+      width: "300px",
+
+      tpsUrl: "",
 
       crid: undefined,
       worker: undefined,
@@ -150,7 +169,19 @@ export default {
     },
     async movieFileChange(tab, event) {
       let _this = this;
-      _this.fn(config.baseUrl + "/getFile/movie/" + _this.category + "/" + tab);
+
+      if (_this.tpsUrl != "") {
+        if (_this.category == "mini") {
+          _this.fn(_this.tpsUrl + "image_native/mini/movie/" + tab);
+          return;
+        }
+        _this.fn(_this.tpsUrl + "movie/" + _this.category + "/" + tab);
+      }
+      if (_this.tpsUrl == "") {
+        _this.fn(
+          config.baseUrl + "/getFile/movie/" + _this.category + "/" + tab
+        );
+      }
     },
 
     getMovie() {

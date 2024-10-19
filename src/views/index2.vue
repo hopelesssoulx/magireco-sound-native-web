@@ -3,13 +3,24 @@
     <div class="flex-between">
       <div class="flex-left">
         <div>
-          <span>key1=</span><input type="text" v-model="hcaKey1" />
-          <span class="ml-10">key2=</span>
+          <span>third party source url = </span>
+          <input
+            style="width: 260px"
+            type="text"
+            v-model="tpsUrl"
+            placeholder="../resource/"
+          />
+          <br />
+
+          <span>key1 = </span>
+          <input type="text" v-model="hcaKey1" />
+          <span class="ml-10">key2 = </span>
           <input type="text" v-model="hcaKey2" />
           <br />
-          <span>decoding mode: </span>
+
+          <span>decoding mode = </span>
           <input type="number" step="8" min="0" max="32" v-model="hcaMode" />
-          <span class="ml-10">loop count: </span>
+          <span class="ml-10">loop count = </span>
           <input
             type="number"
             step="1"
@@ -17,7 +28,7 @@
             max="99"
             v-model="hcaLoopCount"
           />
-          <span class="ml-10">volume: </span>
+          <span class="ml-10">volume = </span>
           <input type="number" step="1" min="0" max="100" v-model="hcaVolume" />
         </div>
         <div class="ml-10">
@@ -189,6 +200,8 @@ export default {
       editMode: false,
       confirmDrawer: false,
       listPre: [],
+
+      tpsUrl: "",
 
       hcaJsUrl: new URL(hcaStrUtil.hcaStr, document.baseURI),
       hcaKey1: "0x01395C51",
@@ -784,7 +797,14 @@ export default {
     },
     async getFile(path) {
       let _this = this;
-      let res = await fetch(config.baseUrl + "/getFile/sound_native/" + path);
+
+      let res;
+      if (_this.tpsUrl != "") {
+        res = await fetch(_this.tpsUrl + path);
+      }
+      if (_this.tpsUrl == "") {
+        res = await fetch(config.baseUrl + "/getFile/sound_native/" + path);
+      }
       _this.decryptAndDecode(res);
     },
     async decryptAndDecode(hca) {
