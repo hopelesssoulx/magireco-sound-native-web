@@ -753,7 +753,7 @@ export default {
 
       let res;
       if (_this.tpsUrl != "") {
-        res = await fetch(_this.tpsUrl + path);
+        res = await fetch(_this.tpsUrl + 'sound_native/' + path);
       }
       if (_this.tpsUrl == "") {
         res = await fetch(config.baseUrl + "/getFile/sound_native/" + path);
