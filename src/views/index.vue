@@ -499,20 +499,22 @@ export default {
       let zip = new JSZip();
       let files = [];
       list.forEach((item) => {
-        let file = commonApi.getFile(filePath + item.file_name).then((res) => {
-          if (downloadType == "hca") {
-            zip.file(item.file_name, res.data, { binary: true });
-          }
-          if (downloadType == "wav") {
-            zip.file(
-              item.file_name + ".wav",
-              _this.decryptAndDecode(res.data),
-              {
-                binary: true,
-              }
-            );
-          }
-        });
+        let file = commonApi
+          .getFile("sound_native/" + filePath + item.file_name)
+          .then((res) => {
+            if (downloadType == "hca") {
+              zip.file(item.file_name, res.data, { binary: true });
+            }
+            if (downloadType == "wav") {
+              zip.file(
+                item.file_name + ".wav",
+                _this.decryptAndDecode(res.data),
+                {
+                  binary: true,
+                }
+              );
+            }
+          });
         files.push(file);
       });
       Promise.all(files).then(() => {
