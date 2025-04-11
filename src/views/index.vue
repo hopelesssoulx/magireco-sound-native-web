@@ -9,6 +9,7 @@
             type="text"
             v-model="tpsUrl"
             placeholder="../resource/"
+            @change="tpsUrlChange($event)"
           />
           <br />
 
@@ -19,7 +20,14 @@
           <br />
 
           <span>decoding mode = </span>
-          <input type="number" step="8" min="8" max="32" v-model="hcaMode" />
+          <input
+            type="number"
+            step="8"
+            min="8"
+            max="32"
+            v-model="hcaMode"
+            @change="hcdModeChange($event)"
+          />
           <span class="ml-10">loop count = </span>
           <input
             type="number"
@@ -461,6 +469,8 @@ export default {
     };
   },
   created() {
+    this.hcaMode = localStorage.getItem("hcaMode") || 32;
+    this.tpsUrl = localStorage.getItem("tpsUrl") || "";
     this.getSoundNative();
     // console.log(JSON.parse(JSON.stringify()));
   },
@@ -826,6 +836,12 @@ export default {
         return "stripe";
       }
       return "";
+    },
+    hcdModeChange() {
+      localStorage.setItem("hcaMode", this.hcaMode);
+    },
+    tpsUrlChange() {
+      localStorage.setItem("tpsUrl", this.tpsUrl);
     },
   },
 };
