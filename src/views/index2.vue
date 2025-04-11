@@ -492,7 +492,7 @@ export default {
             _this.tpsUrl + "sound_native/" + filePath + item.file_name
           ).then((res) => {
             if (downloadType == "hca") {
-              zip.file(item.file_name, res, { binary: true });
+              zip.file(item.file_name, res.arrayBuffer(), { binary: true });
             }
             if (downloadType == "wav") {
               zip.file(item.file_name + ".wav", _this.decryptAndDecode(res), {
