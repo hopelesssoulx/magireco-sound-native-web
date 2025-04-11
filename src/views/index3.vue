@@ -469,7 +469,7 @@ export default {
     };
   },
   created() {
-    this.hcaMode = localStorage.getItem("hcaMode") || 32;
+    this.hcaMode = parseInt(localStorage.getItem("hcaMode")) || 32;
     this.tpsUrl = localStorage.getItem("tpsUrl") || "";
     this.getSoundNative();
     // console.log(JSON.parse(JSON.stringify()));
