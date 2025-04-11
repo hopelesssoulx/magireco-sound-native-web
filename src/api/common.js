@@ -6,6 +6,9 @@ export const getList = () => {
 export const getListBrief = () => {
   return request.get("/getListBrief");
 };
+export const getListBriefFull = () => {
+  return request.get("/getListBriefFull");
+};
 export const getMovie = () => {
   return request.get("/getMovie");
 };

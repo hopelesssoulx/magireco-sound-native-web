@@ -19,7 +19,7 @@
           <br />
 
           <span>decoding mode = </span>
-          <input type="number" step="8" min="0" max="32" v-model="hcaMode" />
+          <input type="number" step="8" min="8" max="32" v-model="hcaMode" />
           <span class="ml-10">loop count = </span>
           <input
             type="number"
@@ -55,13 +55,16 @@
         <el-button type="primary" @click="$router.push({ name: 'index' })">
           sound native 1
         </el-button>
+        <el-button type="primary" @click="$router.push({ name: 'index3' })">
+          sound native 3
+        </el-button>
         <el-button type="primary" @click="$router.push({ name: 'movie' })">
           movie
         </el-button>
       </div>
     </div>
 
-    <el-tabs @tab-click="catrgoryChange">
+    <el-tabs @tab-click="categoryChange">
       <el-tab-pane
         v-for="(category, item, idx) in soundNative"
         :label="item"
@@ -206,7 +209,7 @@ export default {
       hcaJsUrl: new URL(hcaStrUtil.hcaStr, document.baseURI),
       hcaKey1: "0x01395C51",
       hcaKey2: "0x00000000",
-      hcaMode: 16,
+      hcaMode: 32,
       hcaLoopCount: 0,
       hcaVolume: 100,
 
@@ -473,23 +476,44 @@ export default {
 
       let zip = new JSZip();
       let files = [];
-      list.forEach((item) => {
-        let file = commonApi.getFile(filePath + item.file_name).then((res) => {
-          if (downloadType == "hca") {
-            zip.file(item.file_name, res.data, { binary: true });
-          }
-          if (downloadType == "wav") {
-            zip.file(
-              item.file_name + ".wav",
-              _this.decryptAndDecode(res.data),
-              {
+      if (_this.tpsUrl != "") {
+        list.forEach((item) => {
+          let file = fetch(
+            _this.tpsUrl + "sound_native/" + filePath + item.file_name
+          ).then((res) => {
+            if (downloadType == "hca") {
+              zip.file(item.file_name, res, { binary: true });
+            }
+            if (downloadType == "wav") {
+              zip.file(item.file_name + ".wav", _this.decryptAndDecode(res), {
                 binary: true,
-              }
-            );
-          }
+              });
+            }
+          });
+          files.push(file);
         });
-        files.push(file);
-      });
+      }
+      if (_this.tpsUrl == "") {
+        list.forEach((item) => {
+          let file = commonApi
+            .getFile("sound_native/" + filePath + item.file_name)
+            .then((res) => {
+              if (downloadType == "hca") {
+                zip.file(item.file_name, res.data, { binary: true });
+              }
+              if (downloadType == "wav") {
+                zip.file(
+                  item.file_name + ".wav",
+                  _this.decryptAndDecode(res.data),
+                  {
+                    binary: true,
+                  }
+                );
+              }
+            });
+          files.push(file);
+        });
+      }
       Promise.all(files).then(() => {
         zip
           .generateAsync({
@@ -576,7 +600,7 @@ export default {
       _this.editMode = false;
     },
 
-    catrgoryChange(tab, event) {
+    categoryChange(tab, event) {
       let _this = this;
       _this.section = "";
       _this.sectionDesc = "";
@@ -586,6 +610,7 @@ export default {
       _this.audioList = [];
       _this.listPre = [];
       _this.selectionCount = 0;
+      _this.scene0IdxCount = null;
 
       _this.category = tab.props.label;
       _this.categoryData = _this.soundNative[_this.category];

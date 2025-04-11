@@ -21,6 +21,12 @@ const router = createRouter({
       component: () => import("../views/index2.vue"),
     },
     {
+      path: "/index3",
+      name: "index3",
+      meta: { title: "" },
+      component: () => import("../views/index3.vue"),
+    },
+    {
       path: "/movie",
       name: "movie",
       meta: { title: "" },

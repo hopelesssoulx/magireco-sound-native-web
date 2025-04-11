@@ -31,7 +31,7 @@
           <span class="ml-10">volume = </span>
           <input type="number" step="1" min="0" max="100" v-model="hcaVolume" />
         </div>
-        <div class="ml-10">
+        <!-- <div class="ml-10">
           <el-button
             type="danger"
             v-if="editMode == false"
@@ -49,14 +49,14 @@
           <el-button type="danger" v-if="editMode" @click="updateDB()">
             update
           </el-button>
-        </div>
+        </div> -->
       </div>
       <div>
+        <el-button type="primary" @click="$router.push({ name: 'index' })">
+          sound native 1
+        </el-button>
         <el-button type="primary" @click="$router.push({ name: 'index2' })">
           sound native 2
-        </el-button>
-        <el-button type="primary" @click="$router.push({ name: 'index3' })">
-          sound native 3
         </el-button>
         <el-button type="primary" @click="$router.push({ name: 'movie' })">
           movie
@@ -100,7 +100,7 @@
       @change="sectionChange"
     >
       <!-- <el-option v-for="(category, item, idx) in categoryData" :value="item" /> -->
-      <el-option v-for="(item, idx) in categoryData" :value="item" />
+      <el-option v-for="(item, key, idx) in categoryData" :value="key" />
     </el-select>
     <el-select
       v-if="scene0IdxCount != null"
@@ -153,7 +153,7 @@
       <el-table-column label="文件名" fixed width="260">
         <template #default="scope">
           <div @click="fileClick(scope)" class="file">
-            {{ scope.row.file_name }}
+            {{ scope.row }}
           </div>
         </template>
       </el-table-column>
@@ -164,12 +164,12 @@
               controls
               autoplay
               :src="audioList[scope.$index]"
-              :title="scope.row.file_name + '.wav'"
+              :title="scope.row + '.wav'"
             ></audio>
           </div>
         </template>
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop=""
         label="角色"
         width="160"
@@ -273,10 +273,10 @@
             {{ conversationData[scope.$index].remark }}
           </div>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
-    <el-drawer v-model="confirmDrawer" direction="rtl" size="90%">
+    <!-- <el-drawer v-model="confirmDrawer" direction="rtl" size="90%">
       <template #header> </template>
       <template #default>
         <el-table
@@ -416,7 +416,7 @@
       <template #footer>
         <el-button type="danger" @click="doUpdateDB()">update</el-button>
       </template>
-    </el-drawer>
+    </el-drawer> -->
   </div>
 </template>
 
@@ -504,13 +504,13 @@ export default {
       if (_this.tpsUrl != "") {
         list.forEach((item) => {
           let file = fetch(
-            _this.tpsUrl + "sound_native/" + filePath + item.file_name
+            _this.tpsUrl + "sound_native/" + filePath + item
           ).then((res) => {
             if (downloadType == "hca") {
-              zip.file(item.file_name, res, { binary: true });
+              zip.file(item, res, { binary: true });
             }
             if (downloadType == "wav") {
-              zip.file(item.file_name + ".wav", _this.decryptAndDecode(res), {
+              zip.file(item + ".wav", _this.decryptAndDecode(res), {
                 binary: true,
               });
             }
@@ -521,19 +521,15 @@ export default {
       if (_this.tpsUrl == "") {
         list.forEach((item) => {
           let file = commonApi
-            .getFile("sound_native/" + filePath + item.file_name)
+            .getFile("sound_native/" + filePath + item)
             .then((res) => {
               if (downloadType == "hca") {
-                zip.file(item.file_name, res.data, { binary: true });
+                zip.file(item, res.data, { binary: true });
               }
               if (downloadType == "wav") {
-                zip.file(
-                  item.file_name + ".wav",
-                  _this.decryptAndDecode(res.data),
-                  {
-                    binary: true,
-                  }
-                );
+                zip.file(item + ".wav", _this.decryptAndDecode(res.data), {
+                  binary: true,
+                });
               }
             });
           files.push(file);
@@ -557,52 +553,52 @@ export default {
       });
     },
 
-    updateDB() {
-      let _this = this;
+    // updateDB() {
+    //   let _this = this;
 
-      if (_this.$refs["list"] == undefined) {
-        ElNotification({
-          title: "提示",
-          message: "无数据",
-        });
-        return;
-      }
+    //   if (_this.$refs["list"] == undefined) {
+    //     ElNotification({
+    //       title: "提示",
+    //       message: "无数据",
+    //     });
+    //     return;
+    //   }
 
-      _this.listPre = _this.$refs["list"].getSelectionRows();
-      if (!_this.listPre.length) {
-        ElNotification({
-          title: "提示",
-          message: "无数据",
-        });
-        return;
-      }
+    //   _this.listPre = _this.$refs["list"].getSelectionRows();
+    //   if (!_this.listPre.length) {
+    //     ElNotification({
+    //       title: "提示",
+    //       message: "无数据",
+    //     });
+    //     return;
+    //   }
 
-      _this.confirmDrawer = true;
-    },
-    doUpdateDB() {
-      let _this = this;
+    //   _this.confirmDrawer = true;
+    // },
+    // doUpdateDB() {
+    //   let _this = this;
 
-      let listSend = _this.$refs["listPre"].getSelectionRows();
-      if (!listSend.length) {
-        ElNotification({
-          title: "提示",
-          message: "无数据",
-        });
-        return;
-      }
+    //   let listSend = _this.$refs["listPre"].getSelectionRows();
+    //   if (!listSend.length) {
+    //     ElNotification({
+    //       title: "提示",
+    //       message: "无数据",
+    //     });
+    //     return;
+    //   }
 
-      if (_this.category == "bgm") {
-        commonApi.updateBgm(listSend);
-      }
-      if (_this.category == "fullvoice") {
-        commonApi.updateFullvoice(listSend);
-      }
-      if (_this.category == "voice") {
-        commonApi.updateVoice(listSend);
-      }
-      _this.confirmDrawer = false;
-      _this.editMode = false;
-    },
+    //   if (_this.category == "bgm") {
+    //     commonApi.updateBgm(listSend);
+    //   }
+    //   if (_this.category == "fullvoice") {
+    //     commonApi.updateFullvoice(listSend);
+    //   }
+    //   if (_this.category == "voice") {
+    //     commonApi.updateVoice(listSend);
+    //   }
+    //   _this.confirmDrawer = false;
+    //   _this.editMode = false;
+    // },
 
     categoryChange(tab, event) {
       let _this = this;
@@ -616,6 +612,7 @@ export default {
       _this.scene0IdxCount = null;
 
       _this.category = tab.props.label;
+
       _this.categoryData = _this.soundNative[_this.category];
     },
     async sectionChange(tab, event) {
@@ -633,41 +630,46 @@ export default {
       // _this.sectionData = _this.categoryData[_this.section];
 
       if (_this.category == "bgm") {
-        await commonApi.getListBgm(_this.section).then((res) => {
-          _this.conversationData = res.data;
-        });
+        // await commonApi.getListBgm(_this.section).then((res) => {
+        //   _this.conversationData = res.data;
+        // });
+        _this.conversationData =
+          _this.soundNative[_this.category][_this.section];
       }
       if (_this.category == "fullvoice") {
-        await commonApi.getListFullvoice(_this.section).then((res) => {
-          _this.sectionData = res.data;
-          let IdxCount = [];
-          _this.sectionData.forEach((item) => {
-            let Idx;
-            let section = parseInt(_this.section.split("_")[1]);
-            if (section < 104200) {
-              Idx = item.file_name.split("-")[1];
-            }
-            if (section > 104200) {
-              Idx = item.file_name.split("-")[0];
-            }
-            if (!IdxCount.includes(Idx)) {
-              IdxCount.push(Idx);
-            }
-          });
-
-          if (_this.section.split("_")[1] < 104200) {
-            _this.conversationIdxCount = IdxCount;
+        // await commonApi.getListFullvoice(_this.section).then((res) => {
+        // _this.sectionData = res.data;
+        _this.sectionData = _this.soundNative[_this.category][_this.section];
+        let IdxCount = [];
+        _this.sectionData.forEach((item) => {
+          let Idx;
+          let section = parseInt(_this.section.split("_")[1]);
+          if (section < 104200) {
+            Idx = item.split("-")[1];
           }
-          if (_this.section.split("_")[1] > 104200) {
-            _this.scene0IdxCount = IdxCount;
+          if (section > 104200) {
+            Idx = item.split("-")[0];
           }
-          _this.handleSectionDesc(tab);
+          if (!IdxCount.includes(Idx)) {
+            IdxCount.push(Idx);
+          }
         });
+
+        if (_this.section.split("_")[1] < 104200) {
+          _this.conversationIdxCount = IdxCount;
+        }
+        if (_this.section.split("_")[1] > 104200) {
+          _this.scene0IdxCount = IdxCount;
+        }
+        _this.handleSectionDesc(tab);
+        // });
       }
       if (_this.category == "voice") {
-        await commonApi.getListVoice(_this.section).then((res) => {
-          _this.conversationData = res.data;
-        });
+        // await commonApi.getListVoice(_this.section).then((res) => {
+        //   _this.conversationData = res.data;
+        // });
+        _this.conversationData =
+          _this.soundNative[_this.category][_this.section];
       }
       return;
 
@@ -691,11 +693,11 @@ export default {
 
       // let arr = _this.categoryData[_this.section].filter((item) => {
       let arr = _this.sectionData.filter((item) => {
-        return item.file_name.split("-")[0] == _this.Scene0Section;
+        return item.split("-")[0] == _this.Scene0Section;
       });
       let IdxCount = [];
       arr.forEach((item) => {
-        let Idx = item.file_name.split("-")[1];
+        let Idx = item.split("-")[1];
         if (!IdxCount.includes(Idx)) {
           IdxCount.push(Idx);
         }
@@ -710,11 +712,11 @@ export default {
       _this.conversationIdx = tab.props.label;
       let section = parseInt(_this.section.split("_")[1]);
       _this.conversationData = _this.sectionData.filter((item) => {
-        return item.file_name.split("-")[1] == _this.conversationIdx;
+        return item.split("-")[1] == _this.conversationIdx;
       });
       if (section > 104200) {
         _this.conversationData = _this.conversationData.filter((item) => {
-          return item.file_name.split("-")[0] == _this.Scene0Section;
+          return item.split("-")[0] == _this.Scene0Section;
         });
       }
     },
@@ -725,12 +727,10 @@ export default {
       }
       _this.currentClickIdx = scope.$index;
       if (_this.category == "fullvoice") {
-        _this.getFile(
-          _this.category + "/" + _this.section + "/" + scope.row.file_name
-        );
+        _this.getFile(_this.category + "/" + _this.section + "/" + scope.row);
       }
       if (_this.category == "bgm" || _this.category == "voice") {
-        _this.getFile(_this.category + "/" + scope.row.file_name);
+        _this.getFile(_this.category + "/" + scope.row);
       }
     },
     handleSectionDesc(section) {
@@ -769,9 +769,17 @@ export default {
       // commonApi.getList().then((res) => {
       //   _this.soundNative = res.data;
       // });
-      commonApi.getListBrief().then((res) => {
-        _this.soundNative = res.data;
-      });
+      // commonApi.getListBrief().then((res) => {
+      //   _this.soundNative = res.data;
+      // });
+      // commonApi.getListBriefFull().then((res) => {
+      //   _this.soundNative = res.data;
+      // });
+      fetch("/sound-native/sound-native-brief-full.json")
+        .then((res) => res.json())
+        .then((data) => {
+          _this.soundNative = data;
+        });
     },
     async getFile(path) {
       let _this = this;
