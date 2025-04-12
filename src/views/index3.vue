@@ -165,10 +165,11 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="" fixed width="360">
+      <el-table-column label="/" fixed width="860">
         <template #default="scope">
           <div>
             <audio
+              style="width: 820px"
               controls
               autoplay
               :src="audioList[scope.$index]"
@@ -492,6 +493,11 @@ export default {
     downloadSelection(downloadType) {
       let _this = this;
 
+      if (_this.tpsUrl == "") {
+        ElNotification("无资源");
+        return;
+      }
+
       let list = _this.$refs["list"].getSelectionRows();
       if (!list.length) {
         ElNotification({
@@ -732,6 +738,12 @@ export default {
     },
     fileClick(scope) {
       let _this = this;
+
+      if (_this.tpsUrl == "") {
+        ElNotification("无资源");
+        return;
+      }
+
       if (scope.$index == _this.currentClickIdx) {
         return;
       }
@@ -856,8 +868,15 @@ export default {
 </script>
 
 <style>
+.index {
+  margin: auto;
+  width: 1200px;
+}
 .el-table .stripe {
   --el-table-tr-bg-color: #fafafa;
+}
+.el-select-dropdown__wrap {
+  max-height: 600px;
 }
 
 .ml-10 {
